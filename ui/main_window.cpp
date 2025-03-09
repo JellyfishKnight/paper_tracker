@@ -120,6 +120,7 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
     // 初始化串口和wifi
     serial_port_manager = std::make_shared<SerialPortManager>();
     image_downloader = std::make_shared<ESP32VideoStream>();
+    updater = std::make_shared<Updater>();
     LOG_INFO("初始化串口");
     serial_port_manager->init();
     // init serial port manager
@@ -134,10 +135,9 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
                 // 更新IP地址显示，添加 http:// 前缀
                 this->setIPText(current_ip_);
                 LOG_INFO("IP地址已更新: " + current_ip_);
-
-
                 start_image_download();
             }
+            firmware_version = std::to_string(version);
             // 可以添加其他状态更新的日志，如果需要的话
         }, Qt::QueuedConnection);
     });
@@ -338,6 +338,10 @@ void PaperTrackMainWindow::connect_callbacks()
     connect(ui.TongueDownBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onTongueDownChanged);
     connect(ui.CheekPuffLeftBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onCheeckPuffLeftChanged);
     connect(ui.CheekPuffRightBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onCheeckPuffRightChanged);
+
+    // update
+    connect(ui.CheckClientVersionButton, &QPushButton::clicked, this, &PaperTrackMainWindow::onCheckClientVersionClicked);
+    connect(ui.CheckFirmwareVersionButton, &QPushButton::clicked, this, &PaperTrackMainWindow::onCheckFirmwareVersionClicked);
 }
 
 float PaperTrackMainWindow::getRotateAngle() const
@@ -743,12 +747,66 @@ cv::Mat PaperTrackMainWindow::getVideoImage() const
     return std::move(image_downloader->getLatestFrame());
 }
 
-void PaperTrackMainWindow::onCheckFirmwareVersionClicked()
-{
-
-}
-
 void PaperTrackMainWindow::onCheckClientVersionClicked()
 {
+    // 1. 同步获取远程版本信息
+    auto remoteVersionOpt = updater->getClientVersionSync(this);
+    if (!remoteVersionOpt.has_value()) {
+        return;
+    }
+    // 2. 获取本地版本信息
+    auto currentVersionOpt = updater->getCurrentVersion();
+    if (!currentVersionOpt.has_value()) {
+        QMessageBox::critical(this, "错误", "无法获取当前客户端版本信息");
+        return;
+    }
+    // 3. 如果版本不同，则执行更新
+    if (remoteVersionOpt.value().version.tag != currentVersionOpt.value().version.tag) {
+        auto reply = QMessageBox::question(this, "版本检查",
+            "当前客户端版本不是最新版本是否更新？\n版本更新信息如下：\n" +
+            remoteVersionOpt.value().version.description,
+            QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::Yes) {
+            if (!updater->updateApplicationSync(this, remoteVersionOpt.value())) {
+                // 更新过程中有错误，提示信息已在内部处理
+                return;
+            }
+            // 若更新成功，updateApplicationSync 内部会重启程序并退出当前程序
+        }
+    } else {
+        QMessageBox::information(this, "版本检查", "当前客户端版本已是最新版本");
+    }
+}
 
+void PaperTrackMainWindow::onCheckFirmwareVersionClicked()
+{
+    if (getSerialStatus() != SerialStatus::OPENED)
+    {
+        QMessageBox::information(this, "固件版本", "串口未连接，无法获取固件版本");
+        return ;
+    }
+    auto version = updater->getCurrentVersion();
+    if (version.has_value())
+    {
+        if (version.value().version.firmware == getFirmwareVersion())
+        {
+            QMessageBox::information(this, "固件版本", "固件版本已是最新");
+        } else
+        {
+            QMessageBox::information(this, "固件版本", "固件版本不是最新，建议烧录最新固件");
+        }
+    } else
+    {
+        QMessageBox::critical(this, "错误", "无法获取最新固件版本信息");
+    }
+}
+
+std::string PaperTrackMainWindow::getFirmwareVersion() const
+{
+    return firmware_version;
+}
+
+SerialStatus PaperTrackMainWindow::getSerialStatus() const
+{
+    return serial_port_manager->status();
 }

@@ -16,6 +16,7 @@
 #include "serial.hpp"
 #include "logger.hpp"
 #include "reflect.hpp"
+#include "updater.hpp"
 
 struct Rect
 {
@@ -93,7 +94,6 @@ public:
     void setOnSaveConfigButtonClickedFunc(FuncWithoutArgs func);
     void setOnAmpMapChangedFunc(FuncWithoutArgs func);
 
-
     void setBeforeStop(FuncWithoutArgs func);
 
     void set_update_thread(FuncWithoutArgs func);
@@ -114,6 +114,9 @@ public:
     void updateSerialLabel() const;
 
     cv::Mat getVideoImage() const;
+    std::string getFirmwareVersion() const;
+
+    SerialStatus getSerialStatus() const;
 
 private slots:
     void onBrightnessChanged(int value);
@@ -152,7 +155,6 @@ private:
     FuncWithVal onUseFilterClickedFunc;
     FuncWithoutArgs onSaveConfigButtonClickedFunc;
     FuncWithoutArgs onAmpMapChangedFunc;
-
     std::shared_ptr<QTimer> brightness_timer;
 
     int current_brightness;
@@ -172,8 +174,11 @@ private:
 
     std::shared_ptr<SerialPortManager> serial_port_manager;
     std::shared_ptr<ESP32VideoStream> image_downloader;
+    std::shared_ptr<Updater> updater;
 
     PaperTrackerConfig config;
+
+    std::string firmware_version;
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 };

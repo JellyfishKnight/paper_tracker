@@ -1,153 +1,190 @@
 #ifndef UPDATER_HPP
 #define UPDATER_HPP
 
-#include "logger.hpp"
-#include "reflect.hpp"
-#include <curl/curl.h>
-#include <string>
-#include <optional>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
 #include <iostream>
+#include <QObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
+#include <QProgressDialog>
+#include <QProcess>
+#include <QEventLoop>
+#include <QCoreApplication>
+#include <QDir>
+#include <QMessageBox>
+#include <optional>
 
-struct ClientVersion
-{
-    std::string tag;
-    std::string description;
-    std::string firmware;
-    REFLECT(tag, description, firmware);
+// 如果使用 QuaZip，请包含以下头文件
+// #include <quazip.h>
+// #include <quazipfile.h>
+
+// 定义版本相关结构体
+struct ClientVersion {
+    QString tag;
+    QString description;
+    QString firmware;
 };
 
-struct Version
-{
+struct Version {
     ClientVersion version;
-    REFLECT(version);
 };
 
-struct MemoryStruct {
-    char *memory = nullptr;  // 确保初始化为 nullptr
-    size_t size = 0;
-};
-
-class Updater {
+class Updater : public QObject {
 public:
-    Updater() {
-        curl_handle = curl_easy_init();  // 初始化 cURL 句柄
-        if (!curl_handle) {
-            throw std::runtime_error("Curl 初始化失败！");
-        }
-    }
+    explicit Updater(QObject *parent = nullptr) : QObject(parent) {}
 
-    ~Updater() {
-        if (curl_handle) {
-            curl_easy_cleanup(curl_handle);  // 清理 cURL 资源
-        }
-    }
+    // 同步获取远程版本信息（代码略，与之前类似）
+    std::optional<Version> getClientVersionSync(QWidget* window) {
+        QNetworkAccessManager manager;
+        QNetworkRequest request(QUrl("http://47.116.163.1/version.json"));
+        QNetworkReply* reply = manager.get(request);
 
-    std::optional<Version> getClientVersion()
-    {
-        const static std::string url = "http://47.116.163.1/version.json";
+        QEventLoop loop;
+        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        loop.exec();
 
-        struct MemoryStruct chunk;
-        chunk.memory = static_cast<char*>(malloc(1)); // 确保有初始内存
-        chunk.size = 0;
-
-        if (curl_handle) {
-            curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
-            curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, &Updater::write_memory_callback);
-            curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &chunk);
-            curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L); // 允许重定向
-
-            auto res = curl_easy_perform(curl_handle);
-
-            Version version;
-            if (res != CURLE_OK) {
-                 LOG_ERROR("curl_easy_perform() failed: " + std::string(curl_easy_strerror(res)));
-            } else {
-                std::string json_buffer(chunk.memory, chunk.size);
-                version = reflect::json_decode<Version>(json_buffer);
-            }
-
-            // 释放资源
-            free(chunk.memory);
-            return (res == CURLE_OK) ? std::make_optional(version) : std::nullopt;
-        } else {
+        if (reply->error() != QNetworkReply::NoError) {
+            QMessageBox::critical(window, "错误", "获取版本信息失败: " + reply->errorString());
+            reply->deleteLater();
             return std::nullopt;
         }
-    }
 
-    std::optional<Version> getCurrentVersion(QWidget* window)
-    {
-        std::ifstream file;
-        file.open("version.json");
-        if (!file) {
-            LOG_ERROR("无法打开文件: version.json");
+        QByteArray responseData = reply->readAll();
+        reply->deleteLater();
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        if (!doc.isObject()) {
+            QMessageBox::critical(window, "错误", "版本信息格式错误");
             return std::nullopt;
         }
-        std::string version;
-        std::getline(file, version);
+
+        QJsonObject obj = doc.object();
+        QJsonObject versionObj = obj["version"].toObject();
+        ClientVersion cv;
+        cv.tag = versionObj["tag"].toString();
+        cv.description = versionObj["description"].toString();
+        cv.firmware = versionObj["firmware"].toString();
+
+        return Version{cv};
+    }
+
+    // 同步读取本地版本信息
+    std::optional<Version> getCurrentVersion() {
+        QFile file("version.json");
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning("无法打开文件: version.json");
+            return std::nullopt;
+        }
+        QByteArray fileData = file.readAll();
         file.close();
-        return reflect::json_decode<Version>(version);
-    }
 
-    void downloadAppToLocal(QWidget* window)
-    {
-        auto version = getClientVersion();
-        if (!version.has_value()) {
-            QMessageBox::critical(window, "错误", "无法获取版本信息");
-            return;
-        }
-        std::string url = "http://47.116.163.1/downloads/" + version->version.tag;
-        std::string outputFilename = version->version.tag + ".exe";
-
-        std::ofstream outputFile(outputFilename, std::ios::binary); // 以二进制模式打开文件
-        if (!outputFile) {
-            QMessageBox::critical(window, "错误", "无法创建文件");
-            return ;
+        QJsonDocument doc = QJsonDocument::fromJson(fileData);
+        if (!doc.isObject()) {
+            qWarning("JSON 格式错误");
+            return std::nullopt;
         }
 
-        curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, &Updater::writeData);
-        curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &outputFile);
+        QJsonObject obj = doc.object();
+        QJsonObject versionObj = obj["version"].toObject();
+        ClientVersion cv;
+        cv.tag = versionObj["tag"].toString();
+        cv.description = versionObj["description"].toString();
+        cv.firmware = versionObj["firmware"].toString();
 
-        CURLcode res = curl_easy_perform(curl_handle);
-        if (res != CURLE_OK) {
-            QMessageBox::critical(window, "错误", "下载失败: " + std::string(curl_easy_strerror(res)));
-            return ;
+        return Version{cv};
+    }
+
+    // 同步下载 zip 更新包，并返回下载是否成功
+    bool downloadZipSync(QWidget* window, const QString &zipFilePath, const QString &downloadUrl) {
+        QNetworkAccessManager manager;
+        QNetworkRequest request{QUrl(downloadUrl)};
+        QNetworkReply* reply = manager.get(request);
+
+        QProgressDialog progress("正在下载更新包，请稍候...", "取消", 0, 100, window);
+        progress.setWindowTitle("下载更新");
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setMinimumDuration(0);
+
+        connect(reply, &QNetworkReply::downloadProgress, [&](qint64 bytesReceived, qint64 bytesTotal) {
+            if (bytesTotal > 0) {
+                progress.setMaximum(bytesTotal);
+                progress.setValue(bytesReceived);
+            }
+            QCoreApplication::processEvents();
+        });
+        // 如果用户取消，则中止下载
+        connect(&progress, &QProgressDialog::canceled, [&]() {
+            reply->abort();
+        });
+
+        QEventLoop loop;
+        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        loop.exec();
+
+        if (reply->error() != QNetworkReply::NoError) {
+            QMessageBox::critical(window, "错误", "下载更新包失败: " + reply->errorString());
+            reply->deleteLater();
+            return false;
         }
 
-        QMessageBox::information(window, "成功", "文件下载成功");
-        return ;
-    }
-
-private:
-    static size_t write_memory_callback(void *contents, size_t size, size_t nmemb, void *userp) {
-        size_t realsize = size * nmemb;
-        auto *mem = static_cast<MemoryStruct*>(userp);
-
-        // 重新分配内存
-        char* ptr = static_cast<char*>(realloc(mem->memory, mem->size + realsize + 1));
-        if (ptr == nullptr) {
-            // LOG_ERROR("Memory allocation failed");
-            return 0;
+        QFile file(zipFilePath);
+        if (!file.open(QIODevice::WriteOnly)) {
+            QMessageBox::critical(window, "错误", "无法创建文件: " + zipFilePath);
+            reply->deleteLater();
+            return false;
         }
-        mem->memory = ptr;
-        memcpy(&(mem->memory[mem->size]), contents, realsize);
-        mem->size += realsize;
-        mem->memory[mem->size] = 0;  // 确保字符串终止符
-
-        return realsize;
+        file.write(reply->readAll());
+        file.close();
+        reply->deleteLater();
+        return true;
     }
 
-    static size_t writeData(void *buffer, size_t size, size_t nmemb, void *userp) {
-        auto *outputFile = static_cast<std::ofstream *>(userp);
-        outputFile->write(static_cast<const char *>(buffer), size * nmemb);
-        return size * nmemb;
+    // 解压 zip 文件到目标目录（使用 QuaZip 或其他方式实现）
+    // 下面给出使用 QuaZip 的示例伪代码，实际使用时需要确保引入并配置好 QuaZip 库
+    bool extractZip(const QString &zipFilePath, const QString &destinationPath) {
+        // 假设 ExtractZip.ps1 脚本与应用程序位于同一目录下
+        QString appDir = QCoreApplication::applicationDirPath();
+        QString scriptPath = QDir(appDir).filePath("scripts/extract.ps1");
+
+        // 构造调用 PowerShell 脚本的参数
+        QStringList args;
+        args << "-NoProfile"                  // 不加载用户配置文件
+             << "-ExecutionPolicy" << "Bypass"// 绕过执行策略
+             << "-File" << scriptPath         // 指定脚本文件
+             << "-zipPath" << zipFilePath     // 脚本参数：zip 文件路径
+             << "-destination" << destinationPath; // 脚本参数：目标解压路径
+
+        qDebug() << args.join(" ");
+        // 使用 detach 模式启动 PowerShell 脚本，解压操作在后台独立运行
+        bool detached = QProcess::startDetached("powershell", args);
+        if (!detached) {
+            QMessageBox::critical(nullptr, "错误", "无法启动 PowerShell 脚本（detach方式）");
+            return false;
+        }
+        return true;
     }
 
+    // 更新程序：下载 zip 包，解压覆盖文件，关闭当前程序并重启应用
+    bool updateApplicationSync(QWidget* window, const Version &remoteVersion) {
+        // 假设服务器提供的更新包 URL 为：<下载地址>/<版本tag>.zip
+        QString downloadUrl = "http://47.116.163.1/downloads/" + remoteVersion.version.tag;
+        // 保存 zip 文件到当前应用目录下（你也可以选择临时目录）
+        QString appDir = QCoreApplication::applicationDirPath();
+        QString zipFilePath = QDir(appDir).filePath("update.zip");
 
-    CURL *curl_handle = nullptr;
+        // 同步下载 zip 更新包
+        if (!downloadZipSync(window, zipFilePath, downloadUrl))
+            return false;
+
+        QMessageBox::information(window, "提示", "更新包下载成功，重启软件以应用更新");
+
+        // 解压更新包到当前目录，覆盖已有文件
+        extractZip(zipFilePath, appDir);
+
+        QApplication::quit();
+        return true;
+    }
 };
 
 #endif // UPDATER_HPP

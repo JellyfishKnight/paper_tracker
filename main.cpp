@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QProgressDialog>
+#include <QtConcurrent/QtConcurrent>
 #include <video_reader.hpp>
 #include <config_writer.hpp>
 #include <iostream>
@@ -13,6 +14,7 @@
 #include <coroutine>
 #include <QCoreApplication>
 #include <QThread>
+#include <updater.hpp>
 
 void start_image_download(ESP32VideoStream& image_downloader, const std::string& camera_ip)
 {
@@ -78,7 +80,7 @@ void update_ui(PaperTrackMainWindow& window)
             {
                 show_image = frame;
             }
-            window.setVideoImage(show_image.clone());
+            window.setVideoImage(show_image);
             // 控制帧率
         } catch (const std::exception& e) {
             // 使用Qt方式记录日志，而不是minilog
@@ -190,6 +192,7 @@ int main(int argc, char *argv[]) {
     VideoReader video_reader;
     Inference inference;
     OscManager osc_manager;
+    Updater updater;
 
     window.setBeforeStop([&osc_manager] ()
     {
@@ -265,4 +268,3 @@ int main(int argc, char *argv[]) {
 
     return status;
 }
-
