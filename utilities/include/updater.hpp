@@ -1,6 +1,7 @@
 #ifndef UPDATER_HPP
 #define UPDATER_HPP
 
+#include <iostream>
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -144,7 +145,7 @@ public:
     bool extractZip(const QString &zipFilePath, const QString &destinationPath) {
         // 假设 ExtractZip.ps1 脚本与应用程序位于同一目录下
         QString appDir = QCoreApplication::applicationDirPath();
-        QString scriptPath = QDir(appDir).filePath("./scripts/extract.ps1");
+        QString scriptPath = QDir(appDir).filePath("scripts/extract.ps1");
 
         // 构造调用 PowerShell 脚本的参数
         QStringList args;
@@ -154,12 +155,14 @@ public:
              << "-zipPath" << zipFilePath     // 脚本参数：zip 文件路径
              << "-destination" << destinationPath; // 脚本参数：目标解压路径
 
+        qDebug() << args.join(" ");
         // 使用 detach 模式启动 PowerShell 脚本，解压操作在后台独立运行
         bool detached = QProcess::startDetached("powershell", args);
         if (!detached) {
             QMessageBox::critical(nullptr, "错误", "无法启动 PowerShell 脚本（detach方式）");
             return false;
         }
+        return true;
     }
 
     // 更新程序：下载 zip 包，解压覆盖文件，关闭当前程序并重启应用
@@ -173,7 +176,6 @@ public:
         // 同步下载 zip 更新包
         if (!downloadZipSync(window, zipFilePath, downloadUrl))
             return false;
-
 
         QMessageBox::information(window, "提示", "更新包下载成功，重启软件以应用更新");
 
