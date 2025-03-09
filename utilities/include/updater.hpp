@@ -1,153 +1,149 @@
 #ifndef UPDATER_HPP
 #define UPDATER_HPP
 
-#include "logger.hpp"
-#include "reflect.hpp"
-#include <curl/curl.h>
-#include <string>
+#include <QObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
+#include <QMessageBox>
+#include <QProgressDialog>
+#include <QProcess>
+#include <QEventLoop>
 #include <optional>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
-#include <iostream>
 
-struct ClientVersion
-{
-    std::string tag;
-    std::string description;
-    std::string firmware;
-    REFLECT(tag, description, firmware);
+// 定义版本相关结构体
+struct ClientVersion {
+    QString tag;
+    QString description;
+    QString firmware;
 };
 
-struct Version
-{
+struct Version {
     ClientVersion version;
-    REFLECT(version);
 };
 
-struct MemoryStruct {
-    char *memory = nullptr;  // 确保初始化为 nullptr
-    size_t size = 0;
-};
-
-class Updater {
+class Updater : public QObject {
 public:
-    Updater() {
-        curl_handle = curl_easy_init();  // 初始化 cURL 句柄
-        if (!curl_handle) {
-            throw std::runtime_error("Curl 初始化失败！");
-        }
-    }
+    explicit Updater(QObject *parent = nullptr) : QObject(parent) {}
 
-    ~Updater() {
-        if (curl_handle) {
-            curl_easy_cleanup(curl_handle);  // 清理 cURL 资源
-        }
-    }
+    // 同步获取远程版本信息
+    std::optional<Version> getClientVersionSync(QWidget* window) {
+        QNetworkAccessManager manager;
+        QNetworkRequest request(QUrl("http://47.116.163.1/version.json"));
+        QNetworkReply* reply = manager.get(request);
 
-    std::optional<Version> getClientVersion()
-    {
-        const static std::string url = "http://47.116.163.1/version.json";
+        QEventLoop loop;
+        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        loop.exec();
 
-        struct MemoryStruct chunk;
-        chunk.memory = static_cast<char*>(malloc(1)); // 确保有初始内存
-        chunk.size = 0;
-
-        if (curl_handle) {
-            curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
-            curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, &Updater::write_memory_callback);
-            curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &chunk);
-            curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L); // 允许重定向
-
-            auto res = curl_easy_perform(curl_handle);
-
-            Version version;
-            if (res != CURLE_OK) {
-                 LOG_ERROR("curl_easy_perform() failed: " + std::string(curl_easy_strerror(res)));
-            } else {
-                std::string json_buffer(chunk.memory, chunk.size);
-                version = reflect::json_decode<Version>(json_buffer);
-            }
-
-            // 释放资源
-            free(chunk.memory);
-            return (res == CURLE_OK) ? std::make_optional(version) : std::nullopt;
-        } else {
+        if (reply->error() != QNetworkReply::NoError) {
+            QMessageBox::critical(window, "错误", "获取版本信息失败: " + reply->errorString());
+            reply->deleteLater();
             return std::nullopt;
         }
-    }
 
-    std::optional<Version> getCurrentVersion()
-    {
-        std::ifstream file;
-        file.open("version.json");
-        if (!file) {
-            LOG_ERROR("无法打开文件: version.json");
+        QByteArray responseData = reply->readAll();
+        reply->deleteLater();
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        if (!doc.isObject()) {
+            QMessageBox::critical(window, "错误", "版本信息格式错误");
             return std::nullopt;
         }
-        std::string version;
-        std::getline(file, version);
+
+        QJsonObject obj = doc.object();
+        QJsonObject versionObj = obj["version"].toObject();
+        ClientVersion cv;
+        cv.tag = versionObj["tag"].toString();
+        cv.description = versionObj["description"].toString();
+        cv.firmware = versionObj["firmware"].toString();
+
+        return Version{cv};
+    }
+
+    // 同步读取本地版本信息（使用 QFile 和 QJsonDocument）
+    std::optional<Version> getCurrentVersion() {
+        QFile file("version.json");
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning("无法打开文件: version.json");
+            return std::nullopt;
+        }
+        QByteArray fileData = file.readAll();
         file.close();
-        return reflect::json_decode<Version>(version);
-    }
 
-    void downloadAppToLocal(QWidget* window)
-    {
-        auto version = getClientVersion();
-        if (!version.has_value()) {
-            QMessageBox::critical(window, "错误", "无法获取版本信息");
-            return;
-        }
-        std::string url = "http://47.116.163.1/downloads/" + version->version.tag;
-        std::string outputFilename = version->version.tag + ".exe";
-
-        std::ofstream outputFile(outputFilename, std::ios::binary); // 以二进制模式打开文件
-        if (!outputFile) {
-            QMessageBox::critical(window, "错误", "无法创建文件");
-            return ;
+        QJsonDocument doc = QJsonDocument::fromJson(fileData);
+        if (!doc.isObject()) {
+            qWarning("JSON 格式错误");
+            return std::nullopt;
         }
 
-        curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, &Updater::writeData);
-        curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &outputFile);
+        QJsonObject obj = doc.object();
+        QJsonObject versionObj = obj["version"].toObject();
+        ClientVersion cv;
+        cv.tag = versionObj["tag"].toString();
+        cv.description = versionObj["description"].toString();
+        cv.firmware = versionObj["firmware"].toString();
 
-        CURLcode res = curl_easy_perform(curl_handle);
-        if (res != CURLE_OK) {
-            QMessageBox::critical(window, "错误", "下载失败: " + QString::fromStdString(std::string(curl_easy_strerror(res))));
-            return ;
+        return Version{cv};
+    }
+
+    // 同步下载更新文件，阻塞直到完成
+    // 参数 remoteVersion 用于构造下载 URL 和输出文件名
+    bool downloadAppToLocalSync(QWidget* window, const Version& remoteVersion) {
+        QString url = "http://47.116.163.1/downloads/" + remoteVersion.version.tag;
+        QString outputFilename = remoteVersion.version.tag + ".exe";
+
+        QFile file(outputFilename);
+        if (!file.open(QIODevice::WriteOnly)) {
+            QMessageBox::critical(window, "错误", "无法创建文件: " + outputFilename);
+            return false;
         }
 
-        QMessageBox::information(window, "成功", "文件下载成功");
-        return ;
-    }
+        QNetworkAccessManager manager;
+        QNetworkRequest request{QUrl(url)};
+        QNetworkReply* reply = manager.get(request);
 
-private:
-    static size_t write_memory_callback(void *contents, size_t size, size_t nmemb, void *userp) {
-        size_t realsize = size * nmemb;
-        auto *mem = static_cast<MemoryStruct*>(userp);
+        // 创建进度对话框
+        QProgressDialog progress("正在下载安装包，请稍候...", "取消", 0, 100, window);
+        progress.setWindowTitle("下载");
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setMinimumDuration(0);
 
-        // 重新分配内存
-        char* ptr = static_cast<char*>(realloc(mem->memory, mem->size + realsize + 1));
-        if (ptr == nullptr) {
-            // LOG_ERROR("Memory allocation failed");
-            return 0;
+        // 更新进度
+        connect(reply, &QNetworkReply::downloadProgress, [&](qint64 bytesReceived, qint64 bytesTotal) {
+            if (bytesTotal > 0) {
+                progress.setMaximum(bytesTotal);
+                progress.setValue(bytesReceived);
+            }
+            // 处理事件，保证进度条更新
+            QCoreApplication::processEvents();
+        });
+
+        // 若用户取消下载，终止操作
+        connect(&progress, &QProgressDialog::canceled, [&]() {
+            reply->abort();
+        });
+
+        // 使用事件循环等待下载完成
+        QEventLoop loop;
+        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        loop.exec();
+
+        if (reply->error() != QNetworkReply::NoError) {
+            QMessageBox::critical(window, "错误", "下载失败: " + reply->errorString());
+            file.close();
+            reply->deleteLater();
+            return false;
         }
-        mem->memory = ptr;
-        memcpy(&(mem->memory[mem->size]), contents, realsize);
-        mem->size += realsize;
-        mem->memory[mem->size] = 0;  // 确保字符串终止符
 
-        return realsize;
+        // 将下载的数据写入文件
+        file.write(reply->readAll());
+        file.close();
+        reply->deleteLater();
+
+        return true;
     }
-
-    static size_t writeData(void *buffer, size_t size, size_t nmemb, void *userp) {
-        auto *outputFile = static_cast<std::ofstream *>(userp);
-        outputFile->write(static_cast<const char *>(buffer), size * nmemb);
-        return size * nmemb;
-    }
-
-
-    CURL *curl_handle = nullptr;
 };
 
 #endif // UPDATER_HPP

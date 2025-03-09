@@ -16,6 +16,7 @@
 #include "serial.hpp"
 #include "logger.hpp"
 #include "reflect.hpp"
+#include "updater.hpp"
 
 struct Rect
 {
@@ -92,9 +93,6 @@ public:
     void setOnUseFilterClickedFunc(FuncWithVal func);
     void setOnSaveConfigButtonClickedFunc(FuncWithoutArgs func);
     void setOnAmpMapChangedFunc(FuncWithoutArgs func);
-    void setOnCheckFirmwareVersionClickedFunc(FuncWithoutArgs func);
-    void setOnCheckClientVersionClickedFunc(FuncWithoutArgs func);
-
 
     void setBeforeStop(FuncWithoutArgs func);
 
@@ -157,10 +155,6 @@ private:
     FuncWithVal onUseFilterClickedFunc;
     FuncWithoutArgs onSaveConfigButtonClickedFunc;
     FuncWithoutArgs onAmpMapChangedFunc;
-
-    FuncWithoutArgs onCheckClientVersionClickedFunc;
-    FuncWithoutArgs onCheckFirmwareVersionClickedFunc;
-
     std::shared_ptr<QTimer> brightness_timer;
 
     int current_brightness;
@@ -180,6 +174,7 @@ private:
 
     std::shared_ptr<SerialPortManager> serial_port_manager;
     std::shared_ptr<ESP32VideoStream> image_downloader;
+    std::shared_ptr<Updater> updater;
 
     PaperTrackerConfig config;
 

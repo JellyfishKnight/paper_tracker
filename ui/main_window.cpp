@@ -120,6 +120,7 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
     // 初始化串口和wifi
     serial_port_manager = std::make_shared<SerialPortManager>();
     image_downloader = std::make_shared<ESP32VideoStream>();
+    updater = std::make_shared<Updater>();
     LOG_INFO("初始化串口");
     serial_port_manager->init();
     // init serial port manager
@@ -746,24 +747,71 @@ cv::Mat PaperTrackMainWindow::getVideoImage() const
     return std::move(image_downloader->getLatestFrame());
 }
 
-void PaperTrackMainWindow::onCheckFirmwareVersionClicked()
-{
-    onCheckFirmwareVersionClickedFunc();
-}
-
 void PaperTrackMainWindow::onCheckClientVersionClicked()
 {
-    onCheckClientVersionClickedFunc();
+    // 同步获取远程版本信息
+    auto remoteVersionOpt = updater->getClientVersionSync(this);
+    if (!remoteVersionOpt.has_value()) {
+        return; // 错误信息已在 getClientVersionSync() 中提示
+    }
+
+    // 同步获取当前客户端版本信息
+    auto currentVersionOpt = updater->getCurrentVersion();
+    if (!currentVersionOpt.has_value()) {
+        QMessageBox::critical(this, "错误", "无法获取当前客户端版本信息");
+        return;
+    }
+
+    // 版本不一致则提示更新
+    if (remoteVersionOpt.value().version.tag != currentVersionOpt.value().version.tag) {
+        auto reply = QMessageBox::question(this, "版本检查",
+            "当前客户端版本不是最新版本是否更新？\n版本更新信息如下：\n" + remoteVersionOpt.value().version.description,
+            QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::Yes)
+        {
+            // 阻塞下载更新文件
+            if (!updater->downloadAppToLocalSync(this, remoteVersionOpt.value())) {
+                // 下载失败，提示信息在 downloadAppToLocalSync() 内处理
+                return;
+            }
+
+            QMessageBox::information(this, "安装", "安装包已经下载完成，点击确认开始安装");
+
+            QString installerPath = remoteVersionOpt.value().version.tag + ".exe";
+            if (!QProcess::startDetached(installerPath, QStringList())) {
+                QMessageBox::critical(this, "安装", "无法启动安装程序: " + installerPath);
+            } else {
+                QMessageBox::information(this, "安装", "安装程序启动成功，即将退出应用");
+                QApplication::quit();
+            }
+        }
+    }
+    else {
+        QMessageBox::information(this, "版本检查", "当前客户端版本已是最新版本");
+    }
 }
 
-void PaperTrackMainWindow::setOnCheckFirmwareVersionClickedFunc(FuncWithoutArgs func)
+void PaperTrackMainWindow::onCheckFirmwareVersionClicked()
 {
-    onCheckFirmwareVersionClickedFunc = std::move(func);
-}
-
-void PaperTrackMainWindow::setOnCheckClientVersionClickedFunc(FuncWithoutArgs func)
-{
-    onCheckClientVersionClickedFunc = std::move(func);
+    if (getSerialStatus() != SerialStatus::OPENED)
+    {
+        QMessageBox::information(this, "固件版本", "串口未连接，无法获取固件版本");
+        return ;
+    }
+    auto version = updater->getCurrentVersion();
+    if (version.has_value())
+    {
+        if (version.value().version.firmware == getFirmwareVersion())
+        {
+            QMessageBox::information(this, "固件版本", "固件版本已是最新");
+        } else
+        {
+            QMessageBox::information(this, "固件版本", "固件版本不是最新，建议烧录最新固件");
+        }
+    } else
+    {
+        QMessageBox::critical(this, "错误", "无法获取最新固件版本信息");
+    }
 }
 
 std::string PaperTrackMainWindow::getFirmwareVersion() const

@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QProgressDialog>
+#include <QtConcurrent/QtConcurrent>
 #include <video_reader.hpp>
 #include <config_writer.hpp>
 #include <iostream>
@@ -219,54 +220,6 @@ int main(int argc, char *argv[]) {
     {
         inference.set_amp_map(window.getAmpMap());
     });
-    window.setOnCheckFirmwareVersionClickedFunc([&window, &updater] ()
-    {
-        if (window.getSerialStatus() != SerialStatus::OPENED)
-        {
-            QMessageBox::information(&window, "固件版本", "串口未连接，无法获取固件版本");
-            return ;
-        }
-        auto version = updater.getCurrentVersion();
-        if (version.has_value())
-        {
-            if (version.value().version.firmware == window.getFirmwareVersion())
-            {
-                QMessageBox::information(&window, "固件版本", "固件版本已是最新");
-            } else
-            {
-                QMessageBox::information(&window, "固件版本", "固件版本不是最新，建议烧录最新固件");
-            }
-        } else
-        {
-            QMessageBox::critical(&window, "错误", "无法获取最新固件版本信息");
-        }
-    });
-    window.setOnCheckClientVersionClickedFunc([&window, &updater] ()
-    {
-        auto version = updater.getCurrentVersion();
-        if (!version.has_value())
-        {
-            QMessageBox::critical(&window, "错误", "无法获取当前客户端版本信息");
-            return ;
-        }
-        auto remote_version = updater.getClientVersion();
-        if (!remote_version.has_value())
-        {
-            QMessageBox::critical(&window, "错误", "无法获取最新客户端版本信息，请检查网络连接");
-            return ;
-        }
-        if (remote_version.value().version.tag != version.value().version.tag)
-        {
-            auto reply = QMessageBox::question(&window, "版本检查",
-                QString::fromStdString("当前客户端版本不是最新版本是否更新？\n版本更新信息如下：\n" + remote_version.value().version.description),
-                QMessageBox::Yes | QMessageBox::No);
-
-        } else
-        {
-            QMessageBox::information(&window, "版本检查", "当前客户端版本已是最新版本");
-        }
-    });
-
 
     window.set_config(config);
 
