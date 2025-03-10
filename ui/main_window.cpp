@@ -18,6 +18,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 #include "main_window.hpp"
+#include "ui_main_window.h"
 #include <QMessageBox>
 #include <codecvt>
 #include <locale>
@@ -602,15 +603,15 @@ PaperTrackerConfig PaperTrackMainWindow::generate_config() const
         {"cheekPuffLeft", ui.CheekPuffLeftBar->value()},
         {"cheekPuffRight", ui.CheekPuffRightBar->value()},
         {"jawOpen", ui.JawOpenBar->value()},
-        {"jawLeft", ui.MouthLeftBar->value()},
-        {"jawRight", ui.MouthRightBar->value()},
-        {"mouthLeft", ui.TongueOutBar->value()},
-        {"mouthRight", ui.TongueUpBar->value()},
-        {"tongueOut", ui.TongueDownBar->value()},
-        {"tongueUp", ui.TongueLeftBar->value()},
-        {"tongueDown", ui.TongueRightBar->value()},
-        {"tongueLeft", ui.JawLeftBar->value()},
-        {"tongueRight", ui.JawRightBar->value()},
+        {"jawLeft", ui.JawLeftBar->value()},
+        {"jawRight", ui.JawRightBar->value()},
+        {"mouthLeft", ui.MouthLeftBar->value()},
+        {"mouthRight", ui.MouthRightBar->value()},
+        {"tongueOut", ui.TongueOutBar->value()},
+        {"tongueUp", ui.TongueUpBar->value()},
+        {"tongueDown", ui.TongueDownBar->value()},
+        {"tongueLeft", ui.TongueLeftBar->value()},
+        {"tongueRight", ui.TongueRightBar->value()},
     };
     config.rect = roi_rect;
     return config;
