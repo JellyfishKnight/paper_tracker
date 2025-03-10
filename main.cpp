@@ -212,7 +212,7 @@ int main(int argc, char *argv[]) {
     } else {
         QMessageBox box;
         box.setWindowIcon(icon);
-        box.setText("无法打开 QSS 文件");
+        box.setText(QObject::tr("无法打开 QSS 文件"));
         box.exec();
     }
 
