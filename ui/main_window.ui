@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>835</width>
-    <height>553</height>
+    <width>839</width>
+    <height>561</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -225,19 +225,19 @@
       <rect>
        <x>500</x>
        <y>170</y>
-       <width>111</width>
+       <width>141</width>
        <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>启用滤波、插值</string>
+      <string>启用滤波（减少抖动）</string>
      </property>
     </widget>
     <widget class="QComboBox" name="EnergyModeBox">
      <property name="geometry">
       <rect>
-       <x>400</x>
-       <y>162</y>
+       <x>390</x>
+       <y>170</y>
        <width>80</width>
        <height>31</height>
       </rect>
@@ -267,7 +267,7 @@
        <x>310</x>
        <y>170</y>
        <width>81</width>
-       <height>21</height>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
@@ -945,9 +945,9 @@
   <widget class="QLabel" name="WifiConnectLabel">
    <property name="geometry">
     <rect>
-     <x>350</x>
+     <x>310</x>
      <y>10</y>
-     <width>71</width>
+     <width>81</width>
      <height>31</height>
     </rect>
    </property>
@@ -968,9 +968,9 @@
   <widget class="QLabel" name="SerialConnectLabel">
    <property name="geometry">
     <rect>
-     <x>440</x>
+     <x>400</x>
      <y>10</y>
-     <width>71</width>
+     <width>131</width>
      <height>31</height>
     </rect>
    </property>
@@ -986,7 +986,7 @@
     <cursorShape>ArrowCursor</cursorShape>
    </property>
    <property name="text">
-    <string>串口未连接</string>
+    <string>数据线未连接</string>
    </property>
    <property name="textFormat">
     <enum>Qt::TextFormat::AutoText</enum>
