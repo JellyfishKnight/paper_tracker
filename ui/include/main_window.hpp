@@ -70,9 +70,9 @@ public:
     explicit PaperTrackMainWindow(const PaperTrackerConfig& config = {}, QWidget *parent = nullptr);
     ~PaperTrackMainWindow() override;
 
-    void setSerialStatusLabel(const std::string& text) const;
-    void setWifiStatusLabel(const std::string& text) const;
-    void setIPText(const std::string& text) const;
+    void setSerialStatusLabel(const QString& text) const;
+    void setWifiStatusLabel(const QString& text) const;
+    void setIPText(const QString& text) const;
 
     QPlainTextEdit* getLogText() const;
     Rect getRoiRect();

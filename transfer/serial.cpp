@@ -32,7 +32,7 @@
 #include <QTimer>
 #include <thread>
 
-#define COM_PORT "COM101"  // 指定要打开的串口号
+#define COM_PORT "COM111"  // 指定要打开的串口号
 
 
 
@@ -43,7 +43,7 @@ SerialPortManager::SerialPortManager(QObject* parent) : QObject(parent), serialP
 
 void SerialPortManager::init()
 {
-    LOG_DEBUG("正在搜索ESP32-S3设备...");
+    LOG_DEBUG("正在搜索Paper_Tracker设备...");
     std::string portName = FindEsp32S3Port();
     serialPort = new QSerialPort(nullptr);
     serialPort->setBaudRate(QSerialPort::Baud115200);
@@ -52,11 +52,11 @@ void SerialPortManager::init()
     serialPort->setFlowControl(QSerialPort::NoFlowControl);
     serialPort->setStopBits(QSerialPort::OneStop);
     if (portName.empty()) {
-        LOG_DEBUG("无法找到ESP32-S3设备，尝试使用默认端口");
+        LOG_DEBUG("无法找到Paper_Tracker设备");
         serialPort->setPortName(COM_PORT);
     } else {
         currentPort = portName;
-        LOG_INFO("尝试连接到端口: {}", portName);
+        LOG_INFO("尝试连接到Paper_Tracker设备: {}", portName);
         serialPort->setPortName(QString::fromStdString(portName));
     }
 
@@ -70,7 +70,7 @@ void SerialPortManager::init()
 
     if (serialPort->open(QIODevice::ReadWrite))
     {
-        LOG_INFO("串口打开成功");
+        LOG_DEBUG("有线模式面捕打开成功");
         m_status = SerialStatus::OPENED;
     } else
     {
@@ -124,7 +124,7 @@ std::string SerialPortManager::FindEsp32S3Port() {
         if (!SetupDiGetDeviceInstanceIdA(hDevInfo, &devInfoData, instanceId, sizeof(instanceId), nullptr)) {
             continue;
         }
-        LOG_INFO("检查设备: {}", instanceId);
+        LOG_DEBUG("检查设备: {}", instanceId);
         // 检查是否是目标设备 - 尝试所有可能的ID
         bool isTargetDevice = false;
         for (const char* targetDeviceId : targetDeviceIds) {
@@ -153,7 +153,7 @@ std::string SerialPortManager::FindEsp32S3Port() {
 
                 if (RegQueryValueExA(hKey, "PortName", nullptr, &dwType, reinterpret_cast<LPBYTE>(portName), &dwSize) == ERROR_SUCCESS) {
                     targetPort = portName;
-                    LOG_INFO("找到ESP32-S3设备的COM端口: {}", targetPort);
+                    LOG_INFO("找到面捕设备的COM端口: {}", targetPort);
                 }
 
                 RegCloseKey(hKey);
@@ -193,9 +193,9 @@ std::string SerialPortManager::FindEsp32S3Port() {
                     reinterpret_cast<PBYTE>(friendlyName),
                     nameSize,
                     nullptr)) {
-                    LOG_INFO(" - {} ({})", portName, friendlyName);
+                    LOG_DEBUG(" - {} ({})", portName, friendlyName);
                 } else {
-                    LOG_INFO(" - {}", portName);
+                    LOG_DEBUG(" - {}", portName);
                 }
             }
 
@@ -206,7 +206,7 @@ std::string SerialPortManager::FindEsp32S3Port() {
     SetupDiDestroyDeviceInfoList(hDevInfo);
 
     if (targetPort.empty()) {
-        LOG_DEBUG("未找到ESP32-S3设备的COM端口");
+        LOG_DEBUG("未找到面捕设备的COM端口");
     }
 
     return targetPort;
@@ -474,8 +474,8 @@ void SerialPortManager::flashESP32(QWidget* window)
     LOG_INFO("准备刷写ESP32固件...");
     if (m_status == SerialStatus::FAILED)
     {
-        LOG_INFO("串口未连接，重启失败");
-        QMessageBox::critical(window, "启动失败", "串口未连接");
+        LOG_INFO("有线模式面捕未连接，重启失败");
+        QMessageBox::critical(window, "启动失败", "有线模式面捕未连接");
         return ;
     }
     stop();
@@ -566,8 +566,8 @@ void SerialPortManager::restartESP32(QWidget* window)
 {
     if (m_status == SerialStatus::FAILED)
     {
-        LOG_INFO("串口未连接，重启失败");
-        QMessageBox::critical(window, "启动失败", "串口未连接");
+        LOG_INFO("有线模式面捕未连接，重启失败");
+        QMessageBox::critical(window, "启动失败", "有线模式面捕未连接");
         return ;
     }
     // 记录操作
