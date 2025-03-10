@@ -168,26 +168,33 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
         LOG_INFO("串口连接成功");
         setSerialStatusLabel("串口连接成功");
     }
-    // if (updater->getClientVersionSync(nullptr).has_value())
-    // {
-    //     if (updater->getCurrentVersion().has_value())
-    //     {
-    //         if (updater->getCurrentVersion().value().version.tag !=
-    //             updater->getClientVersionSync(nullptr).value().version.tag)
-    //         {
-    //             ui.ClientStatusLabel->setText("当前客户端版本过低，请更新");
-    //         } else
-    //         {
-    //             ui.ClientStatusLabel->setText("当前客户端版本为最新版本");
-    //         }
-    //     } else
-    //     {
-    //         ui.ClientStatusLabel->setText("无法获取到当前客户端版本");
-    //     }
-    // } else
-    // {
-    //     ui.ClientStatusLabel->setText("无法连接到服务器，请检查网络");
-    // }
+
+    QTimer::singleShot(1000, this, [this] ()
+    {
+        auto remote_opt = updater->getClientVersionSync(nullptr);
+        if (remote_opt.has_value())
+        {
+            auto remote_version = remote_opt.value();
+            auto curr_opt = updater->getCurrentVersion();
+            if (curr_opt.has_value())
+            {
+                auto curr_version = curr_opt.value();
+                if (curr_version.version.tag != remote_version.version.tag)
+                {
+                    ui.ClientStatusLabel->setText("当前客户端版本过低，请更新");
+                } else
+                {
+                    ui.ClientStatusLabel->setText("当前客户端版本为最新版本");
+                }
+            } else
+            {
+                ui.ClientStatusLabel->setText("无法获取到当前客户端版本");
+            }
+        } else
+        {
+            ui.ClientStatusLabel->setText("无法连接到服务器，请检查网络");
+        }
+    });
 }
 
 void PaperTrackMainWindow::setVideoImage(const cv::Mat& image)
