@@ -540,6 +540,10 @@ void PaperTrackMainWindow::stop()
     {
         inference_thread.join();
     }
+    if (osc_send_thread.joinable())
+    {
+        osc_send_thread.join();
+    }
     if (brightness_timer) {
         brightness_timer->stop();
         brightness_timer.reset();
@@ -836,4 +840,9 @@ std::string PaperTrackMainWindow::getFirmwareVersion() const
 SerialStatus PaperTrackMainWindow::getSerialStatus() const
 {
     return serial_port_manager->status();
+}
+
+void PaperTrackMainWindow::set_osc_send_thead(FuncWithoutArgs func)
+{
+    osc_send_thread = std::thread(std::move(func));
 }

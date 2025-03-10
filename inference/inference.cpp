@@ -512,3 +512,8 @@ void Inference::set_r_factor(float factor)
 {
     r_factor = factor;
 }
+
+bool Inference::use_filter_status() const
+{
+    return use_filter;
+}

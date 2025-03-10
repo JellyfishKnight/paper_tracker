@@ -148,6 +148,41 @@ void inference_image(
             }
             inference.inference(infer_frame);
         }
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+        int delay_ms = max(0, static_cast<int>(1000.0 / window.get_max_fps() - elapsed));
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+    }
+}
+
+void osc_send(
+    PaperTrackMainWindow& window,
+    Inference& inference,
+    OscManager& osc_manager
+)
+{
+    auto last_time = std::chrono::high_resolution_clock::now();
+    double fps_total = 0;
+    double fps_count = 0;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    while (window.is_running())
+    {
+        if (fps_total > 1000)
+        {
+            fps_count = 0;
+            fps_total = 0;
+        }
+        // calculate fps
+        auto start = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(start - last_time);
+        last_time = start;
+        auto fps = 1000.0 / static_cast<double>(duration.count());
+        fps_total += fps;
+        fps_count += 1;
+        fps = fps_total/fps_count;
+        auto start_time = std::chrono::high_resolution_clock::now();
+
+        inference.set_dt(duration.count() / 1000.0);
         // 发送OSC数据
         std::vector<float> output = inference.get_output();
         if (!output.empty()) {
@@ -156,8 +191,8 @@ void inference_image(
         }
 
         auto end_time = std::chrono::high_resolution_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count ();
-        int delay_ms = max(0, static_cast<int>(1000.0 / 60 - elapsed));
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+        int delay_ms = max(0, static_cast<int>(1000.0 / 66.0 - elapsed));
         std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
     }
 }
@@ -253,6 +288,10 @@ int main(int argc, char *argv[]) {
     {
         inference_image(window, inference, osc_manager);
     });
+    window.set_osc_send_thead([&window, &inference, &osc_manager] ()
+    {
+        osc_send(window, inference, osc_manager);
+    });
 
     int status = QApplication::exec();
 
@@ -264,7 +303,6 @@ int main(int argc, char *argv[]) {
     {
         LOG_ERROR("配置文件保存失败");
     }
-
     window.stop();
 
     return status;

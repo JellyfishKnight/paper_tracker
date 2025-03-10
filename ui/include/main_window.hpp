@@ -98,6 +98,7 @@ public:
 
     void set_update_thread(FuncWithoutArgs func);
     void set_inference_thread(FuncWithoutArgs func);
+    void set_osc_send_thead(FuncWithoutArgs func);
 
     bool is_running() const;
 
@@ -115,7 +116,6 @@ public:
 
     cv::Mat getVideoImage() const;
     std::string getFirmwareVersion() const;
-
     SerialStatus getSerialStatus() const;
 
 private slots:
@@ -169,6 +169,7 @@ private:
 
     std::thread update_thread;
     std::thread inference_thread;
+    std::thread osc_send_thread;
     bool app_is_running = true;
     int max_fps = 38;
 
