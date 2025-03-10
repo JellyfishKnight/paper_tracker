@@ -188,35 +188,6 @@
       <string>重启</string>
      </property>
     </widget>
-    <widget class="QLabel" name="SerialConnectLabel">
-     <property name="geometry">
-      <rect>
-       <x>660</x>
-       <y>210</y>
-       <width>71</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>串口未连接</string>
-     </property>
-     <property name="textFormat">
-      <enum>Qt::TextFormat::AutoText</enum>
-     </property>
-    </widget>
-    <widget class="QLabel" name="WifiConnectLabel">
-     <property name="geometry">
-      <rect>
-       <x>660</x>
-       <y>250</y>
-       <width>71</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>wifi未连接</string>
-     </property>
-    </widget>
     <widget class="QLabel" name="label_17">
      <property name="geometry">
       <rect>
@@ -254,21 +225,21 @@
       <rect>
        <x>500</x>
        <y>170</y>
-       <width>81</width>
+       <width>111</width>
        <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>启用滤波</string>
+      <string>启用滤波、插值</string>
      </property>
     </widget>
     <widget class="QComboBox" name="EnergyModeBox">
      <property name="geometry">
       <rect>
        <x>400</x>
-       <y>170</y>
+       <y>162</y>
        <width>80</width>
-       <height>23</height>
+       <height>31</height>
       </rect>
      </property>
      <property name="duplicatesEnabled">
@@ -314,8 +285,6 @@
     <zorder>textEdit</zorder>
     <zorder>label_16</zorder>
     <zorder>restart_Button</zorder>
-    <zorder>SerialConnectLabel</zorder>
-    <zorder>WifiConnectLabel</zorder>
     <zorder>label_17</zorder>
     <zorder>RotateImageBar</zorder>
     <zorder>UseFilterBox</zorder>
@@ -895,12 +864,27 @@
       <string>x1</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QWidget" name="page_3">
+    <widget class="QPushButton" name="CheckClientVersionButton">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>101</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>检查客户端更新</string>
+     </property>
+    </widget>
     <widget class="QPushButton" name="CheckFirmwareVersionButton">
      <property name="geometry">
       <rect>
-       <x>510</x>
-       <y>80</y>
-       <width>131</width>
+       <x>20</x>
+       <y>60</y>
+       <width>101</width>
        <height>41</height>
       </rect>
      </property>
@@ -908,17 +892,37 @@
       <string>检查固件更新</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="CheckClientVersionButton">
+    <widget class="QComboBox" name="LanguageBox">
      <property name="geometry">
       <rect>
-       <x>510</x>
-       <y>130</y>
-       <width>131</width>
-       <height>41</height>
+       <x>140</x>
+       <y>50</y>
+       <width>101</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>中文（简体）</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>English</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_20">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>20</y>
+       <width>181</width>
+       <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>检查客户端更新</string>
+      <string>语言/Language（开发中）</string>
      </property>
     </widget>
    </widget>
@@ -947,6 +951,94 @@
    </property>
    <property name="text">
     <string>标定页面</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="ClientStatusLabel">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>10</y>
+     <width>231</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>无法连接到服务器，请检查网络</string>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::TextInteractionFlag::NoTextInteraction</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="WifiConnectLabel">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>10</y>
+     <width>91</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+     <bold>true</bold>
+     <stylestrategy>PreferAntialias</stylestrategy>
+    </font>
+   </property>
+   <property name="text">
+    <string>wifi未连接</string>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::TextInteractionFlag::NoTextInteraction</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="SerialConnectLabel">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>10</y>
+     <width>91</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+     <bold>true</bold>
+     <underline>false</underline>
+     <stylestrategy>PreferAntialias</stylestrategy>
+    </font>
+   </property>
+   <property name="cursor">
+    <cursorShape>ArrowCursor</cursorShape>
+   </property>
+   <property name="text">
+    <string>串口未连接</string>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::TextFormat::AutoText</enum>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::TextInteractionFlag::NoTextInteraction</set>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="SettingPageButton">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>10</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>设置</string>
    </property>
   </widget>
  </widget>

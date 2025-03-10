@@ -36,6 +36,14 @@ public:
     void set_amp_map(const std::unordered_map<std::string, int>& amp_map);
 
     const std::unordered_map<std::string, size_t>& getBlendShapeIndexMap() { return blendShapeIndexMap; }
+
+    void set_dt(float dt);
+
+    void set_q_factor(float factor);
+
+    void set_r_factor(float factor);
+
+    bool use_filter_status() const;
 private:
     void init_kalman_filter();
 
@@ -100,6 +108,10 @@ private:
     std::vector<float> raw_data;       // 存储原始数据
     std::vector<float> filtered_data;  // 存储滤波后数据
     int max_points = 200;        // 只保留最近 200 个点，防止图像过长
+
+    float dt = 0.02;
+    float q_factor = 5e-1;
+    float r_factor = 5e-5;
 };
 
 #endif //BABBLE_INFERENCE_HPP

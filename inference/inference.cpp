@@ -40,7 +40,7 @@ void Inference::load_model(const std::string &model_path) {
         std::string actual_model_path = model_path.empty() ? "D:/Babble/model/model.onnx" : model_path;
 
         if (!file_exists(actual_model_path)) {
-            LOG_ERROR("错误：模型文件不存在: " + actual_model_path.c_str());
+            LOG_ERROR("错误：模型文件不存在: {}", actual_model_path);
             return;
         }
 
@@ -80,9 +80,9 @@ void Inference::load_model(const std::string &model_path) {
 
         LOG_INFO("模型加载完成");
     } catch (const Ort::Exception& e) {
-        LOG_ERROR("ONNX Runtime 错误: " + e.what());
+        LOG_ERROR("ONNX Runtime 错误: {}", e.what());
     } catch (const std::exception& e) {
-        LOG_ERROR("标准异常: " + e.what());
+        LOG_ERROR("标准异常: {}", e.what());
     }
 }
 
@@ -169,15 +169,14 @@ void Inference::allocate_buffers() {
 }
 
 void Inference::inference(cv::Mat& image) {
-    if (image.empty()) {
-        return;
+    if (!image.empty()) {
+        // 预处理图像 - 直接修改预分配的内存
+        preprocess(image);
+        // 运行模型
+        run_model();
+        // 处理结果
+        process_results();
     }
-
-    // 预处理图像 - 直接修改预分配的内存
-    preprocess(image);
-
-    // 运行模型
-    run_model();
 }
 
 void Inference::preprocess(const cv::Mat& input) {
@@ -233,12 +232,8 @@ void Inference::run_model() {
         session_->Run(Ort::RunOptions{nullptr}, io_binding);
         // 获取输出
         output_tensors_ = io_binding.GetOutputValues();
-
-        // 处理结果
-        process_results();
-
     } catch (const std::exception& e) {
-        LOG_ERROR("推理错误: " + e.what());
+        LOG_ERROR("推理错误: {}", e.what());
     }
 }
 
@@ -259,12 +254,8 @@ void Inference::process_results() {
         for (auto dim : output_shape) {
             output_size *= dim;
         }
-
-        // 这里可以实现你的后处理逻辑
-        // 例如: 解析输出数据，更新结果等
-
     } catch (const std::exception& e) {
-        LOG_ERROR("处理结果出错: " + e.what());
+        LOG_ERROR("处理结果出错: {}", e.what());
     }
 }
 
@@ -290,28 +281,42 @@ std::vector<float> Inference::get_output()
         }
         // 复制数据到结果向量
         std::vector<float> result(output_data, output_data + output_size);
+        result.resize(90);
 
         if (use_filter)
         {
 #ifdef DEBUG
-            float raw = result[4];
+            float raw = 0;
+            if (!result.empty())
+            {
+                raw = result[4];
+            }
 #endif
             if (last_use_filter != use_filter)
             {
                 last_use_filter = use_filter;
-                cv::Mat input = cv::Mat(cv::Size(1, 45), CV_32F, result.data());
+                cv::Mat input = cv::Mat(cv::Size(1, 90), CV_32F, result.data());
                 kalman_filter_.set_state(input.clone());
             }
-            kalman_filter_.predict();
-            auto measure = cv::Mat(cv::Size(1, 45), CV_32F, result.data());
-            kalman_filter_.correct(measure.clone());
-            result = kalman_filter_.state_post_.clone();
+            auto temp = kalman_filter_.predict();
+            if (!result.empty())
+            {
+                auto measure = cv::Mat(cv::Size(1, 45), CV_32F, result.data());
+                kalman_filter_.correct(measure.clone());
+                result = kalman_filter_.state_post_.clone();
+            } else
+            {
+                result = temp.clone();
+            }
 #ifdef DEBUG
-            float filtered = result[4];
-            plot_curve(raw, filtered);
+            if (!result.empty())
+            {
+                float filtered = result[4];
+                plot_curve(raw, filtered);
+            }
 #endif
         }
-
+        result.resize(45);
         // 输出限幅以及增益调整
         AmpMapToOutput(result);
 
@@ -319,7 +324,7 @@ std::vector<float> Inference::get_output()
         return result;
     }
     catch (const std::exception& e) {
-        LOG_ERROR("获取输出数据错误: " + e.what());
+        LOG_ERROR("获取输出数据错误: {}", e.what());
         return std::vector<float>();
     }
 }
@@ -331,32 +336,53 @@ void Inference::set_use_filter(bool use)
 
 void Inference::init_kalman_filter()
 {
-    auto state_size = 45;
+    int pos_size = 45;
+    int state_size = pos_size * 2;  // 状态向量扩展为 [位置, 速度]
 
-    // 测量矩阵 H（假设测量值是状态的直接观测）
-
-    // 初始化协方差矩阵 P（初始估计的不确定性）
+    // 初始化协方差矩阵 P，状态维度为 90
     cv::Mat P = cv::Mat::eye(state_size, state_size, CV_32F) * 1.0f;
 
-    // 过程噪声 Q（可以动态调整）
-    auto update_Q = []() {
-        return cv::Mat::eye(45, 45, CV_32F) * 5e-2f;
+    // 过程噪声 Q：这里采用常数速度模型的过程噪声，使用 dt 的多项式因子
+    auto update_Q = [state_size, pos_size, this]() {
+        cv::Mat Q = cv::Mat::zeros(state_size, state_size, CV_32F);
+        float dt2 = dt * dt;
+        float dt3 = dt2 * dt;
+        float dt4 = dt3 * dt;
+        cv::Mat I_pos = cv::Mat::eye(pos_size, pos_size, CV_32F);
+
+        // 位置部分：dt^4/4 * q_factor^2
+        Q(cv::Rect(0, 0, pos_size, pos_size)) = I_pos * (dt4 / 4.0f * q_factor * q_factor);
+
+        // 位置-速度 交叉项：dt^3/2 * q_factor^2
+        Q(cv::Rect(pos_size, 0, pos_size, pos_size)) = I_pos * (dt3 / 2.0f * q_factor * q_factor);
+        Q(cv::Rect(0, pos_size, pos_size, pos_size)) = I_pos * (dt3 / 2.0f * q_factor * q_factor);
+
+        // 速度部分：dt^2 * q_factor^2
+        Q(cv::Rect(pos_size, pos_size, pos_size, pos_size)) = I_pos * (dt2 * q_factor * q_factor);
+
+        return Q;
     };
 
-    // 测量噪声 R（可以根据测量值动态调整）
-    auto update_R = [](const cv::Mat& measurement) {
-        return cv::Mat::eye(45, 45, CV_32F) * 1.f;
+    // 测量噪声 R：假设测量仅包含位置部分，尺寸为 45x45
+    auto update_R = [pos_size, this](const cv::Mat& measurement) {
+        return cv::Mat::eye(pos_size, pos_size, CV_32F) * r_factor;
     };
 
-    // 定义状态转移函数
-    auto TransMat = [state_size](const cv::Mat& state) {
+    // 定义状态转移矩阵 F = [ I, dt*I; 0, I ]
+    auto TransMat = [state_size, pos_size, this](const cv::Mat& state) {
         cv::Mat F = cv::Mat::eye(state_size, state_size, CV_32F);
+        cv::Mat I_pos = cv::Mat::eye(pos_size, pos_size, CV_32F);
+        // 将上半部分右侧的子矩阵设为 dt * I，即位置更新依赖于速度
+        F(cv::Rect(pos_size, 0, pos_size, pos_size)) = I_pos * dt;
+
         return F;
     };
 
-    // 定义测量矩阵函数
-    auto MeasureMat = [state_size](const cv::Mat& state) {
-        cv::Mat H = cv::Mat::eye(state_size, state_size, CV_32F);
+    // 定义测量矩阵函数 H = [ I, 0 ]，只观测位置部分
+    auto MeasureMat = [pos_size, state_size](const cv::Mat& state) {
+        cv::Mat H = cv::Mat::zeros(pos_size, state_size, CV_32F);
+        cv::Mat I_pos = cv::Mat::eye(pos_size, pos_size, CV_32F);
+        I_pos.copyTo(H(cv::Rect(0, 0, pos_size, pos_size)));
         return H;
     };
 
@@ -470,4 +496,24 @@ void Inference::AmpMapToOutput(std::vector<float>& output)
 void Inference::set_amp_map(const std::unordered_map<std::string, int>& amp_map)
 {
     blendShapeAmpMap = std::move(amp_map);
+}
+
+void Inference::set_dt(float dt)
+{
+    this->dt = dt;
+}
+
+void Inference::set_q_factor(float factor)
+{
+    q_factor = factor;
+}
+
+void Inference::set_r_factor(float factor)
+{
+    r_factor = factor;
+}
+
+bool Inference::use_filter_status() const
+{
+    return use_filter;
 }

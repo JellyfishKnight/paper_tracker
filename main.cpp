@@ -85,13 +85,13 @@ void update_ui(PaperTrackMainWindow& window)
         } catch (const std::exception& e) {
             // 使用Qt方式记录日志，而不是minilog
             QMetaObject::invokeMethod(&window, [&e]() {
-                LOG_ERROR("错误： 视频处理异常: " + e.what());
+                LOG_ERROR("错误, 视频处理异常: {}", e.what());
             }, Qt::QueuedConnection);
         }
         auto end_time = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count ();
         int delay_ms = max(0, static_cast<int>(1000.0 / min(window.get_max_fps() + 30, 50) - elapsed));
-        LOG_DEBUG("UIFPS:" +  std::to_string(min(window.get_max_fps() + 30, 60)));
+        // LOG_DEBUG("UIFPS:" +  std::to_string(min(window.get_max_fps() + 30, 60)));
         std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
     }
 }
@@ -123,9 +123,11 @@ void inference_image(
         fps_total += fps;
         fps_count += 1;
         fps = fps_total/fps_count;
-        // LOG_DEBUG("模型FPS： " + std::to_string(fps));
+        LOG_INFO("模型FPS： {}", fps);
 
         auto start_time = std::chrono::high_resolution_clock::now();
+        // 设置时间序列
+        inference.set_dt(duration.count() / 1000.0);
 
         auto frame = window.getVideoImage();
         // 推理处理
@@ -139,24 +141,58 @@ void inference_image(
             cv::warpAffine(frame, frame, rotate_matrix, frame.size(), cv::INTER_NEAREST);
             cv::Mat infer_frame;
             infer_frame = frame.clone();
-
             auto roi_rect = window.getRoiRect();
             if (!roi_rect.rect.empty() && roi_rect.is_roi_end)
             {
                 infer_frame = infer_frame(roi_rect.rect);
             }
             inference.inference(infer_frame);
-            // 发送OSC数据
-            std::vector<float> output = inference.get_output();
-
-            if (!output.empty()) {
-                window.updateCalibrationProgressBars(output, inference.getBlendShapeIndexMap());
-                osc_manager.sendModelOutput(output);
-            }
         }
         auto end_time = std::chrono::high_resolution_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count ();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
         int delay_ms = max(0, static_cast<int>(1000.0 / window.get_max_fps() - elapsed));
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+    }
+}
+
+void osc_send(
+    PaperTrackMainWindow& window,
+    Inference& inference,
+    OscManager& osc_manager
+)
+{
+    auto last_time = std::chrono::high_resolution_clock::now();
+    double fps_total = 0;
+    double fps_count = 0;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    while (window.is_running())
+    {
+        if (fps_total > 1000)
+        {
+            fps_count = 0;
+            fps_total = 0;
+        }
+        // calculate fps
+        auto start = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(start - last_time);
+        last_time = start;
+        auto fps = 1000.0 / static_cast<double>(duration.count());
+        fps_total += fps;
+        fps_count += 1;
+        fps = fps_total/fps_count;
+        auto start_time = std::chrono::high_resolution_clock::now();
+
+        inference.set_dt(duration.count() / 1000.0);
+        // 发送OSC数据
+        std::vector<float> output = inference.get_output();
+        if (!output.empty()) {
+            window.updateCalibrationProgressBars(output, inference.getBlendShapeIndexMap());
+            osc_manager.sendModelOutput(output);
+        }
+
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+        int delay_ms = max(0, static_cast<int>(1000.0 / 66.0 - elapsed));
         std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
     }
 }
@@ -230,7 +266,7 @@ int main(int argc, char *argv[]) {
         LOG_INFO("模型加载完成");
     } catch (const std::exception& e) {
         // 使用Qt方式记录日志，而不是minilog
-        LOG_ERROR("错误: 模型加载异常: " + e.what());
+        LOG_ERROR("错误: 模型加载异常: {}", e.what());
     }
 
     // 初始化OSC管理器
@@ -252,6 +288,10 @@ int main(int argc, char *argv[]) {
     {
         inference_image(window, inference, osc_manager);
     });
+    window.set_osc_send_thead([&window, &inference, &osc_manager] ()
+    {
+        osc_send(window, inference, osc_manager);
+    });
 
     int status = QApplication::exec();
 
@@ -263,7 +303,6 @@ int main(int argc, char *argv[]) {
     {
         LOG_ERROR("配置文件保存失败");
     }
-
     window.stop();
 
     return status;

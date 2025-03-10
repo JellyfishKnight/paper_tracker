@@ -42,8 +42,6 @@ public:
     QTextEdit *textEdit;
     QLabel *label_16;
     QPushButton *restart_Button;
-    QLabel *SerialConnectLabel;
-    QLabel *WifiConnectLabel;
     QLabel *label_17;
     QScrollBar *RotateImageBar;
     QCheckBox *UseFilterBox;
@@ -93,10 +91,17 @@ public:
     QLabel *label_3;
     QLabel *label_4;
     QLabel *label_19;
-    QPushButton *CheckFirmwareVersionButton;
+    QWidget *page_3;
     QPushButton *CheckClientVersionButton;
+    QPushButton *CheckFirmwareVersionButton;
+    QComboBox *LanguageBox;
+    QLabel *label_20;
     QPushButton *MainPageButton;
     QPushButton *CalibrationPageButton;
+    QLabel *ClientStatusLabel;
+    QLabel *WifiConnectLabel;
+    QLabel *SerialConnectLabel;
+    QPushButton *SettingPageButton;
 
     void setupUi(QWidget *PaperTrackerMainWindow)
     {
@@ -149,13 +154,6 @@ public:
         restart_Button = new QPushButton(page);
         restart_Button->setObjectName("restart_Button");
         restart_Button->setGeometry(QRect(650, 60, 91, 41));
-        SerialConnectLabel = new QLabel(page);
-        SerialConnectLabel->setObjectName("SerialConnectLabel");
-        SerialConnectLabel->setGeometry(QRect(660, 210, 71, 31));
-        SerialConnectLabel->setTextFormat(Qt::TextFormat::AutoText);
-        WifiConnectLabel = new QLabel(page);
-        WifiConnectLabel->setObjectName("WifiConnectLabel");
-        WifiConnectLabel->setGeometry(QRect(660, 250, 71, 31));
         label_17 = new QLabel(page);
         label_17->setObjectName("label_17");
         label_17->setGeometry(QRect(310, 140, 81, 21));
@@ -167,13 +165,13 @@ public:
         RotateImageBar->setOrientation(Qt::Orientation::Horizontal);
         UseFilterBox = new QCheckBox(page);
         UseFilterBox->setObjectName("UseFilterBox");
-        UseFilterBox->setGeometry(QRect(500, 170, 81, 21));
+        UseFilterBox->setGeometry(QRect(500, 170, 111, 21));
         EnergyModeBox = new QComboBox(page);
         EnergyModeBox->addItem(QString());
         EnergyModeBox->addItem(QString());
         EnergyModeBox->addItem(QString());
         EnergyModeBox->setObjectName("EnergyModeBox");
-        EnergyModeBox->setGeometry(QRect(400, 170, 80, 23));
+        EnergyModeBox->setGeometry(QRect(400, 162, 80, 31));
         EnergyModeBox->setDuplicatesEnabled(false);
         label_18 = new QLabel(page);
         label_18->setObjectName("label_18");
@@ -190,8 +188,6 @@ public:
         textEdit->raise();
         label_16->raise();
         restart_Button->raise();
-        SerialConnectLabel->raise();
-        WifiConnectLabel->raise();
         label_17->raise();
         RotateImageBar->raise();
         UseFilterBox->raise();
@@ -358,19 +354,62 @@ public:
         label_19 = new QLabel(page_2);
         label_19->setObjectName("label_19");
         label_19->setGeometry(QRect(130, 10, 61, 16));
-        CheckFirmwareVersionButton = new QPushButton(page_2);
-        CheckFirmwareVersionButton->setObjectName("CheckFirmwareVersionButton");
-        CheckFirmwareVersionButton->setGeometry(QRect(510, 80, 131, 41));
-        CheckClientVersionButton = new QPushButton(page_2);
-        CheckClientVersionButton->setObjectName("CheckClientVersionButton");
-        CheckClientVersionButton->setGeometry(QRect(510, 130, 131, 41));
         stackedWidget->addWidget(page_2);
+        page_3 = new QWidget();
+        page_3->setObjectName("page_3");
+        CheckClientVersionButton = new QPushButton(page_3);
+        CheckClientVersionButton->setObjectName("CheckClientVersionButton");
+        CheckClientVersionButton->setGeometry(QRect(20, 10, 101, 41));
+        CheckFirmwareVersionButton = new QPushButton(page_3);
+        CheckFirmwareVersionButton->setObjectName("CheckFirmwareVersionButton");
+        CheckFirmwareVersionButton->setGeometry(QRect(20, 60, 101, 41));
+        LanguageBox = new QComboBox(page_3);
+        LanguageBox->addItem(QString());
+        LanguageBox->addItem(QString());
+        LanguageBox->setObjectName("LanguageBox");
+        LanguageBox->setGeometry(QRect(140, 50, 101, 31));
+        label_20 = new QLabel(page_3);
+        label_20->setObjectName("label_20");
+        label_20->setGeometry(QRect(140, 20, 181, 16));
+        stackedWidget->addWidget(page_3);
         MainPageButton = new QPushButton(PaperTrackerMainWindow);
         MainPageButton->setObjectName("MainPageButton");
         MainPageButton->setGeometry(QRect(10, 10, 75, 23));
         CalibrationPageButton = new QPushButton(PaperTrackerMainWindow);
         CalibrationPageButton->setObjectName("CalibrationPageButton");
         CalibrationPageButton->setGeometry(QRect(110, 10, 75, 23));
+        ClientStatusLabel = new QLabel(PaperTrackerMainWindow);
+        ClientStatusLabel->setObjectName("ClientStatusLabel");
+        ClientStatusLabel->setGeometry(QRect(570, 10, 231, 31));
+        QFont font;
+        font.setBold(true);
+        font.setItalic(true);
+        ClientStatusLabel->setFont(font);
+        ClientStatusLabel->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
+        WifiConnectLabel = new QLabel(PaperTrackerMainWindow);
+        WifiConnectLabel->setObjectName("WifiConnectLabel");
+        WifiConnectLabel->setGeometry(QRect(350, 10, 91, 31));
+        QFont font1;
+        font1.setBold(true);
+        font1.setItalic(true);
+        font1.setStyleStrategy(QFont::PreferAntialias);
+        WifiConnectLabel->setFont(font1);
+        WifiConnectLabel->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
+        SerialConnectLabel = new QLabel(PaperTrackerMainWindow);
+        SerialConnectLabel->setObjectName("SerialConnectLabel");
+        SerialConnectLabel->setGeometry(QRect(460, 10, 91, 31));
+        QFont font2;
+        font2.setBold(true);
+        font2.setItalic(true);
+        font2.setUnderline(false);
+        font2.setStyleStrategy(QFont::PreferAntialias);
+        SerialConnectLabel->setFont(font2);
+        SerialConnectLabel->setCursor(QCursor(Qt::CursorShape::ArrowCursor));
+        SerialConnectLabel->setTextFormat(Qt::TextFormat::AutoText);
+        SerialConnectLabel->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
+        SettingPageButton = new QPushButton(PaperTrackerMainWindow);
+        SettingPageButton->setObjectName("SettingPageButton");
+        SettingPageButton->setGeometry(QRect(210, 10, 75, 23));
 
         retranslateUi(PaperTrackerMainWindow);
 
@@ -392,10 +431,8 @@ public:
         label_2->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\346\227\245\345\277\227\347\252\227\345\217\243\357\274\232", nullptr));
         label_16->setText(QCoreApplication::translate("PaperTrackerMainWindow", "IP\345\234\260\345\235\200\357\274\232", nullptr));
         restart_Button->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\351\207\215\345\220\257", nullptr));
-        SerialConnectLabel->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\344\270\262\345\217\243\346\234\252\350\277\236\346\216\245", nullptr));
-        WifiConnectLabel->setText(QCoreApplication::translate("PaperTrackerMainWindow", "wifi\346\234\252\350\277\236\346\216\245", nullptr));
         label_17->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\346\227\213\350\275\254\350\247\222\345\272\246\350\260\203\346\225\264", nullptr));
-        UseFilterBox->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\345\220\257\347\224\250\346\273\244\346\263\242", nullptr));
+        UseFilterBox->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\345\220\257\347\224\250\346\273\244\346\263\242\343\200\201\346\217\222\345\200\274", nullptr));
         EnergyModeBox->setItemText(0, QCoreApplication::translate("PaperTrackerMainWindow", "\346\231\256\351\200\232\346\250\241\345\274\217", nullptr));
         EnergyModeBox->setItemText(1, QCoreApplication::translate("PaperTrackerMainWindow", "\350\212\202\350\203\275\346\250\241\345\274\217", nullptr));
         EnergyModeBox->setItemText(2, QCoreApplication::translate("PaperTrackerMainWindow", "\346\200\247\350\203\275\346\250\241\345\274\217", nullptr));
@@ -418,10 +455,18 @@ public:
         label_3->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\346\224\276\345\244\247\345\200\215\347\216\207", nullptr));
         label_4->setText(QCoreApplication::translate("PaperTrackerMainWindow", "x3", nullptr));
         label_19->setText(QCoreApplication::translate("PaperTrackerMainWindow", "x1", nullptr));
-        CheckFirmwareVersionButton->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\346\243\200\346\237\245\345\233\272\344\273\266\346\233\264\346\226\260", nullptr));
         CheckClientVersionButton->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\346\243\200\346\237\245\345\256\242\346\210\267\347\253\257\346\233\264\346\226\260", nullptr));
+        CheckFirmwareVersionButton->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\346\243\200\346\237\245\345\233\272\344\273\266\346\233\264\346\226\260", nullptr));
+        LanguageBox->setItemText(0, QCoreApplication::translate("PaperTrackerMainWindow", "\344\270\255\346\226\207\357\274\210\347\256\200\344\275\223\357\274\211", nullptr));
+        LanguageBox->setItemText(1, QCoreApplication::translate("PaperTrackerMainWindow", "English", nullptr));
+
+        label_20->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\350\257\255\350\250\200/Language\357\274\210\345\274\200\345\217\221\344\270\255\357\274\211", nullptr));
         MainPageButton->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\344\270\273\351\241\265\351\235\242", nullptr));
         CalibrationPageButton->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\346\240\207\345\256\232\351\241\265\351\235\242", nullptr));
+        ClientStatusLabel->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\346\227\240\346\263\225\350\277\236\346\216\245\345\210\260\346\234\215\345\212\241\345\231\250\357\274\214\350\257\267\346\243\200\346\237\245\347\275\221\347\273\234", nullptr));
+        WifiConnectLabel->setText(QCoreApplication::translate("PaperTrackerMainWindow", "wifi\346\234\252\350\277\236\346\216\245", nullptr));
+        SerialConnectLabel->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\344\270\262\345\217\243\346\234\252\350\277\236\346\216\245", nullptr));
+        SettingPageButton->setText(QCoreApplication::translate("PaperTrackerMainWindow", "\350\256\276\347\275\256", nullptr));
     } // retranslateUi
 
 };
