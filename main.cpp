@@ -91,7 +91,7 @@ void update_ui(PaperTrackMainWindow& window)
         auto end_time = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count ();
         int delay_ms = max(0, static_cast<int>(1000.0 / min(window.get_max_fps() + 30, 50) - elapsed));
-        LOG_DEBUG("UIFPS:" +  std::to_string(min(window.get_max_fps() + 30, 60)));
+        // LOG_DEBUG("UIFPS:" +  std::to_string(min(window.get_max_fps() + 30, 60)));
         std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
     }
 }
@@ -123,9 +123,11 @@ void inference_image(
         fps_total += fps;
         fps_count += 1;
         fps = fps_total/fps_count;
-        // LOG_DEBUG("模型FPS： " + std::to_string(fps));
+        LOG_INFO("模型FPS： " + std::to_string(fps));
 
         auto start_time = std::chrono::high_resolution_clock::now();
+        // 设置时间序列
+        inference.set_dt(duration.count() / 1000.0);
 
         auto frame = window.getVideoImage();
         // 推理处理
@@ -139,24 +141,23 @@ void inference_image(
             cv::warpAffine(frame, frame, rotate_matrix, frame.size(), cv::INTER_NEAREST);
             cv::Mat infer_frame;
             infer_frame = frame.clone();
-
             auto roi_rect = window.getRoiRect();
             if (!roi_rect.rect.empty() && roi_rect.is_roi_end)
             {
                 infer_frame = infer_frame(roi_rect.rect);
             }
             inference.inference(infer_frame);
-            // 发送OSC数据
-            std::vector<float> output = inference.get_output();
-
-            if (!output.empty()) {
-                window.updateCalibrationProgressBars(output, inference.getBlendShapeIndexMap());
-                osc_manager.sendModelOutput(output);
-            }
         }
+        // 发送OSC数据
+        std::vector<float> output = inference.get_output();
+        if (!output.empty()) {
+            window.updateCalibrationProgressBars(output, inference.getBlendShapeIndexMap());
+            osc_manager.sendModelOutput(output);
+        }
+
         auto end_time = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count ();
-        int delay_ms = max(0, static_cast<int>(1000.0 / window.get_max_fps() - elapsed));
+        int delay_ms = max(0, static_cast<int>(1000.0 / (window.get_max_fps() + 30) - elapsed));
         std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
     }
 }
