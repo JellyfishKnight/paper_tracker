@@ -38,8 +38,8 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
     init_logger(ui.LogText);
     LOG_INFO("系统初始化中...");
     // 初始化串口连接状态
-    ui.SerialConnectLabel->setText(tr("串口未连接"));
-    ui.WifiConnectLabel->setText(tr("Wifi未连接"));
+    ui.SerialConnectLabel->setText(tr("有线模式未连接"));
+    ui.WifiConnectLabel->setText(tr("无线模式未连接"));
     // 初始化页面导航
     bound_pages();
 
@@ -122,7 +122,7 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
     serial_port_manager = std::make_shared<SerialPortManager>();
     image_downloader = std::make_shared<ESP32VideoStream>();
     updater = std::make_shared<Updater>();
-    LOG_INFO("初始化串口");
+    LOG_INFO("初始化有线模式");
     serial_port_manager->init();
     // init serial port manager
     serial_port_manager->setDeviceStatusCallback([this]
@@ -143,14 +143,14 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
         }, Qt::QueuedConnection);
     });
 
-    LOG_INFO("等待串口状态响应");
+    LOG_DEBUG("等待有线模式面捕连接");
     while (serial_port_manager->status() == SerialStatus::CLOSED) {}
-    LOG_INFO("串口状态响应完毕");
+    LOG_DEBUG("有线模式面捕连接完毕");
 
     if (serial_port_manager->status() == SerialStatus::FAILED)
     {
-        setSerialStatusLabel("串口连接失败");
-        LOG_WARN("串口未连接，尝试从配置文件中读取地址...");
+        setSerialStatusLabel("有线模式面捕连接失败");
+        LOG_WARN("有线模式面捕未连接，尝试从配置文件中读取地址...");
         if (!config.wifi_ip.empty())
         {
             LOG_INFO("从配置文件中读取地址成功");
@@ -166,8 +166,8 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
         }
     } else
     {
-        LOG_INFO("串口连接成功");
-        setSerialStatusLabel("串口连接成功");
+        LOG_INFO("有线模式面捕连接成功");
+        setSerialStatusLabel("有线模式面捕连接成功");
     }
 
     QTimer::singleShot(1000, this, [this] ()
@@ -771,10 +771,10 @@ void PaperTrackMainWindow::updateSerialLabel() const
 {
     if (serial_port_manager->status() == SerialStatus::OPENED)
     {
-        setSerialStatusLabel("串口已连接");
+        setSerialStatusLabel("面捕有线模式已连接");
     } else
     {
-        setSerialStatusLabel("串口连接失败");
+        setSerialStatusLabel("面捕有线模式连接失败");
     }
 }
 
@@ -818,7 +818,7 @@ void PaperTrackMainWindow::onCheckFirmwareVersionClicked()
 {
     if (getSerialStatus() != SerialStatus::OPENED)
     {
-        QMessageBox::information(this, tr("固件版本"), tr("串口未连接，无法获取固件版本"));
+        QMessageBox::information(this, tr("固件版本"), tr("有线模式面捕未连接，无法获取固件版本"));
         return ;
     }
     auto version = updater->getCurrentVersion();

@@ -123,7 +123,7 @@ void inference_image(
         fps_total += fps;
         fps_count += 1;
         fps = fps_total/fps_count;
-        LOG_INFO("模型FPS： {}", fps);
+        LOG_DEBUG("模型FPS： {}", fps);
 
         auto start_time = std::chrono::high_resolution_clock::now();
         // 设置时间序列
