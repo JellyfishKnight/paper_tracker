@@ -85,7 +85,7 @@ void update_ui(PaperTrackMainWindow& window)
         } catch (const std::exception& e) {
             // 使用Qt方式记录日志，而不是minilog
             QMetaObject::invokeMethod(&window, [&e]() {
-                LOG_ERROR("错误： 视频处理异常: " + e.what());
+                LOG_ERROR("错误, 视频处理异常: {}", e.what());
             }, Qt::QueuedConnection);
         }
         auto end_time = std::chrono::high_resolution_clock::now();
@@ -123,7 +123,7 @@ void inference_image(
         fps_total += fps;
         fps_count += 1;
         fps = fps_total/fps_count;
-        LOG_INFO("模型FPS： " + std::to_string(fps));
+        LOG_INFO("模型FPS： {}", fps);
 
         auto start_time = std::chrono::high_resolution_clock::now();
         // 设置时间序列
@@ -266,7 +266,7 @@ int main(int argc, char *argv[]) {
         LOG_INFO("模型加载完成");
     } catch (const std::exception& e) {
         // 使用Qt方式记录日志，而不是minilog
-        LOG_ERROR("错误: 模型加载异常: " + e.what());
+        LOG_ERROR("错误: 模型加载异常: {}", e.what());
     }
 
     // 初始化OSC管理器

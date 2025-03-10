@@ -111,7 +111,7 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
     connect(vrcftProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
         [this](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit) {
-            LOG_DEBUG("VRCFT已正常退出，退出码: " + std::to_string(exitCode));
+            LOG_DEBUG("VRCFT已正常退出，退出码: {}", exitCode);
         } else {
             LOG_ERROR("VRCFT异常退出");
         }
@@ -134,7 +134,7 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
                 current_ip_ = "http://" + ip;
                 // 更新IP地址显示，添加 http:// 前缀
                 this->setIPText(current_ip_);
-                LOG_INFO("IP地址已更新: " + current_ip_);
+                LOG_INFO("IP地址已更新: {}", current_ip_);
                 start_image_download();
             }
             firmware_version = std::to_string(version);
@@ -443,7 +443,7 @@ void PaperTrackMainWindow::onSendButtonClicked()
     }
 
     // 构建并发送数据包
-    LOG_INFO("已发送WiFi配置: SSID=" + ssid + ", PWD=" + password);
+    LOG_INFO("已发送WiFi配置: SSID = {}, PWD = {}", ssid, password);
     LOG_INFO("等待数据被发送后开始自动重启ESP32...");
     serial_port_manager->sendWiFiConfig(ssid, password);
 
@@ -509,7 +509,7 @@ void PaperTrackMainWindow::onSendBrightnessValue() const
     std::string packet = "A6" + brightness_str + "B6";
     serial_port_manager->write_data(packet);
     // 记录操作
-    LOG_INFO("已设置亮度: " + std::to_string(current_brightness));
+    LOG_INFO("已设置亮度: {}", current_brightness);
 }
 
 void PaperTrackMainWindow::setBeforeStop(FuncWithoutArgs func)
@@ -641,7 +641,7 @@ void PaperTrackMainWindow::set_config(const PaperTrackerConfig& config)
         ui.TongueRightBar->setValue(config.amp_map.at("tongueRight"));
     } catch (std::exception& e)
     {
-        LOG_ERROR("配置文件中的振幅映射错误: " + std::string(e.what()));
+        LOG_ERROR("配置文件中的振幅映射错误: {}", e.what());
     }
     roi_rect = config.rect;
 }

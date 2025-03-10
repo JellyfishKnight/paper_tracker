@@ -40,7 +40,7 @@ void Inference::load_model(const std::string &model_path) {
         std::string actual_model_path = model_path.empty() ? "D:/Babble/model/model.onnx" : model_path;
 
         if (!file_exists(actual_model_path)) {
-            LOG_ERROR("错误：模型文件不存在: " + actual_model_path.c_str());
+            LOG_ERROR("错误：模型文件不存在: {}", actual_model_path);
             return;
         }
 
@@ -80,9 +80,9 @@ void Inference::load_model(const std::string &model_path) {
 
         LOG_INFO("模型加载完成");
     } catch (const Ort::Exception& e) {
-        LOG_ERROR("ONNX Runtime 错误: " + e.what());
+        LOG_ERROR("ONNX Runtime 错误: {}", e.what());
     } catch (const std::exception& e) {
-        LOG_ERROR("标准异常: " + e.what());
+        LOG_ERROR("标准异常: {}", e.what());
     }
 }
 
@@ -233,7 +233,7 @@ void Inference::run_model() {
         // 获取输出
         output_tensors_ = io_binding.GetOutputValues();
     } catch (const std::exception& e) {
-        LOG_ERROR("推理错误: " + e.what());
+        LOG_ERROR("推理错误: {}", e.what());
     }
 }
 
@@ -255,7 +255,7 @@ void Inference::process_results() {
             output_size *= dim;
         }
     } catch (const std::exception& e) {
-        LOG_ERROR("处理结果出错: " + e.what());
+        LOG_ERROR("处理结果出错: {}", e.what());
     }
 }
 
@@ -324,7 +324,7 @@ std::vector<float> Inference::get_output()
         return result;
     }
     catch (const std::exception& e) {
-        LOG_ERROR("获取输出数据错误: " + e.what());
+        LOG_ERROR("获取输出数据错误: {}", e.what());
         return std::vector<float>();
     }
 }

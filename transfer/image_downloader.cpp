@@ -46,7 +46,7 @@ bool ESP32VideoStream::init(const std::string& url)
 
     // 检查URL是否为WebSocket URL (ws:// 或 wss://)
     if (url.substr(0, 5) != "ws://" && url.substr(0, 6) != "wss://") {
-        LOG_INFO("转换HTTP URL为WebSocket URL: " + url);
+        LOG_INFO("转换HTTP URL为WebSocket URL: {}", url);
         // 如果是HTTP URL，转换为WebSocket URL
         if (url.substr(0, 7) == "http://") {
             currentStreamUrl = "ws://" + url.substr(7) + "/ws";
@@ -68,7 +68,7 @@ bool ESP32VideoStream::init(const std::string& url)
         }
     }
 
-    LOG_INFO("初始化WebSocket视频流，URL: " + currentStreamUrl);
+    LOG_INFO("初始化WebSocket视频流，URL: {}", currentStreamUrl);
     return true;
 }
 
@@ -111,7 +111,7 @@ bool ESP32VideoStream::start()
     }
 
     // 连接WebSocket
-    LOG_INFO("开始连接WebSocket: " + currentStreamUrl);
+    LOG_INFO("开始连接WebSocket: {}", currentStreamUrl);
     webSocket->open(QUrl(QString::fromStdString(currentStreamUrl)));
 
     if (!heartbeatTimer->isActive())
@@ -154,7 +154,7 @@ cv::Mat ESP32VideoStream::getLatestFrame() const
 
 void ESP32VideoStream::onConnected()
 {
-    LOG_INFO("WebSocket连接成功: " + currentStreamUrl);
+    LOG_INFO("WebSocket连接成功: {}", currentStreamUrl);
     isRunning = true;
 }
 
@@ -168,13 +168,11 @@ void ESP32VideoStream::onError(QAbstractSocket::SocketError error)
 {
     QString errorString = webSocket->errorString();
     int errorCode = static_cast<int>(error);
-    LOG_DEBUG("WebSocket错误: " + std::to_string(errorCode) +
-              " - " + errorString.toStdString() +
-              " (URL: " + currentStreamUrl + ")");
+    LOG_DEBUG("WebSocket错误: {}-{} (URL: {})", errorCode, errorString.toStdString(), currentStreamUrl);
     LOG_ERROR("无线连接失败，请确保面捕已经开机且连接上WIFI");
     // 输出更多连接信息
-    LOG_DEBUG("连接状态: " + std::to_string(static_cast<int>(webSocket->state())));
-    LOG_DEBUG("代理类型: " + std::to_string(static_cast<int>(webSocket->proxy().type())));
+    LOG_DEBUG("连接状态: {}", static_cast<int>(webSocket->state()));
+    LOG_DEBUG("代理类型: {}", static_cast<int>(webSocket->proxy().type()));
 
     // 如果是代理错误，尝试重新连接一次，使用不同的URL格式
     if (error == QAbstractSocket::ProxyProtocolError) {
@@ -185,7 +183,7 @@ void ESP32VideoStream::onError(QAbstractSocket::SocketError error)
         // 如果URL末尾有 "/ws"，尝试移除它
         if (newUrl.size() > 3 && newUrl.substr(newUrl.size() - 3) == "/ws") {
             newUrl = newUrl.substr(0, newUrl.size() - 3);
-            LOG_INFO("尝试新URL: " + newUrl);
+            LOG_INFO("尝试新URL: {}", newUrl);
 
             // 重置WebSocket并尝试新URL
             webSocket->close();
@@ -228,7 +226,7 @@ void ESP32VideoStream::onBinaryMessageReceived(const QByteArray &message)
                 frame_timestamps.back() - frame_timestamps.front()).count();
             float fps = (frame_timestamps.size() - 1) / duration;
 
-            LOG_DEBUG("当前WebSocket帧率: " + std::to_string(fps) + " FPS");
+            LOG_DEBUG("当前WebSocket帧率: {} FPS", fps);
             last_fps_log_time = current_time;
         }
 
@@ -278,12 +276,12 @@ void ESP32VideoStream::onBinaryMessageReceived(const QByteArray &message)
                 if (message.size() > 4) {
                     uint32_t magic = 0;
                     memcpy(&magic, message.data(), 4);
-                    LOG_DEBUG("数据前4字节魔数: 0x" + QString::number(magic, 16).toStdString());
+                    LOG_DEBUG("数据前4字节魔数: 0x{}", QString::number(magic, 16).toStdString());
                 }
             }
         }
     } catch (const std::exception& e) {
-        LOG_ERROR("处理WebSocket消息时出错: " + std::string(e.what()));
+        LOG_ERROR("处理WebSocket消息时出错: {}", e.what());
     }
 }
 
