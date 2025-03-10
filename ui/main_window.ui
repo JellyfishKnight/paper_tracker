@@ -274,32 +274,6 @@
       <string>性能模式选择</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="CheckClientVersionButton">
-     <property name="geometry">
-      <rect>
-       <x>540</x>
-       <y>240</y>
-       <width>101</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>检查客户端更新</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="CheckFirmwareVersionButton">
-     <property name="geometry">
-      <rect>
-       <x>650</x>
-       <y>240</y>
-       <width>101</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>检查固件更新</string>
-     </property>
-    </widget>
     <zorder>SSIDText</zorder>
     <zorder>PasswordText</zorder>
     <zorder>BrightnessBar</zorder>
@@ -317,8 +291,6 @@
     <zorder>EnergyModeBox</zorder>
     <zorder>label_18</zorder>
     <zorder>ImageLabel</zorder>
-    <zorder>CheckClientVersionButton</zorder>
-    <zorder>CheckFirmwareVersionButton</zorder>
    </widget>
    <widget class="QWidget" name="page_2">
     <widget class="QScrollArea" name="scrollArea">
@@ -893,6 +865,67 @@
      </property>
     </widget>
    </widget>
+   <widget class="QWidget" name="page_3">
+    <widget class="QPushButton" name="CheckClientVersionButton">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>101</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>检查客户端更新</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="CheckFirmwareVersionButton">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>60</y>
+       <width>101</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>检查固件更新</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="LanguageBox">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>50</y>
+       <width>101</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>中文（简体）</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>English</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_20">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>20</y>
+       <width>181</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>语言/Language（开发中）</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QPushButton" name="MainPageButton">
    <property name="geometry">
@@ -993,6 +1026,19 @@
    </property>
    <property name="textInteractionFlags">
     <set>Qt::TextInteractionFlag::NoTextInteraction</set>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="SettingPageButton">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>10</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>设置</string>
    </property>
   </widget>
  </widget>

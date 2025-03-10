@@ -63,11 +63,12 @@ endif()
 add_library(
     utilities
     utilities/logger.cpp
+    utilities/updater.cpp
 )
 
 target_link_libraries(
     utilities PUBLIC
-    Qt6::Core Qt6::Gui Qt6::Widgets CURL::libcurl
+    Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::WebSockets Qt6::SerialPort CURL::libcurl
 )
 
 target_include_directories(

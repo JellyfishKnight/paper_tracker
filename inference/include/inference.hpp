@@ -42,6 +42,8 @@ public:
     void set_q_factor(float factor);
 
     void set_r_factor(float factor);
+
+    bool use_filter_status() const;
 private:
     void init_kalman_filter();
 

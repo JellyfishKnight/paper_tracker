@@ -37,8 +37,8 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
     init_logger(ui.LogText);
     LOG_INFO("系统初始化中...");
     // 初始化串口连接状态
-    ui.SerialConnectLabel->setText("有线模式未连接");
-    ui.WifiConnectLabel->setText("无线模式未连接");
+    ui.SerialConnectLabel->setText(tr("有线模式未连接"));
+    ui.WifiConnectLabel->setText(tr("无线模式未连接"));
     // 初始化页面导航
     bound_pages();
 
@@ -111,7 +111,7 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
     connect(vrcftProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
         [this](int exitCode, QProcess::ExitStatus exitStatus) {
         if (exitStatus == QProcess::NormalExit) {
-            LOG_DEBUG("VRCFT已正常退出，退出码: " + std::to_string(exitCode));
+            LOG_DEBUG("VRCFT已正常退出，退出码: {}", exitCode);
         } else {
             LOG_ERROR("VRCFT异常退出");
         }
@@ -133,8 +133,8 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
             {
                 current_ip_ = "http://" + ip;
                 // 更新IP地址显示，添加 http:// 前缀
-                this->setIPText(current_ip_);
-                LOG_INFO("IP地址已更新: " + current_ip_);
+                this->setIPText(QString::fromStdString(current_ip_));
+                LOG_INFO("IP地址已更新: {}", current_ip_);
                 start_image_download();
             }
             firmware_version = std::to_string(version);
@@ -160,7 +160,7 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
         {
             QMessageBox msgBox;
             msgBox.setWindowIcon(this->windowIcon());
-            msgBox.setText("未找到配置文件信息，请将面捕通过数据线连接到电脑进行首次配置");
+            msgBox.setText(tr("未找到配置文件信息，请将面捕通过数据线连接到电脑进行首次配置"));
             msgBox.exec();
         }
     } else
@@ -168,26 +168,33 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
         LOG_INFO("有线模式面捕连接成功");
         setSerialStatusLabel("有线模式面捕连接成功");
     }
-    // if (updater->getClientVersionSync(nullptr).has_value())
-    // {
-    //     if (updater->getCurrentVersion().has_value())
-    //     {
-    //         if (updater->getCurrentVersion().value().version.tag !=
-    //             updater->getClientVersionSync(nullptr).value().version.tag)
-    //         {
-    //             ui.ClientStatusLabel->setText("当前客户端版本过低，请更新");
-    //         } else
-    //         {
-    //             ui.ClientStatusLabel->setText("当前客户端版本为最新版本");
-    //         }
-    //     } else
-    //     {
-    //         ui.ClientStatusLabel->setText("无法获取到当前客户端版本");
-    //     }
-    // } else
-    // {
-    //     ui.ClientStatusLabel->setText("无法连接到服务器，请检查网络");
-    // }
+
+    QTimer::singleShot(1000, this, [this] ()
+    {
+        auto remote_opt = updater->getClientVersionSync(nullptr);
+        if (remote_opt.has_value())
+        {
+            auto remote_version = remote_opt.value();
+            auto curr_opt = updater->getCurrentVersion();
+            if (curr_opt.has_value())
+            {
+                auto curr_version = curr_opt.value();
+                if (curr_version.version.tag != remote_version.version.tag)
+                {
+                    ui.ClientStatusLabel->setText(tr("当前客户端版本过低，请更新"));
+                } else
+                {
+                    ui.ClientStatusLabel->setText(tr("当前客户端版本为最新版本"));
+                }
+            } else
+            {
+                ui.ClientStatusLabel->setText(tr("无法获取到当前客户端版本"));
+            }
+        } else
+        {
+            ui.ClientStatusLabel->setText(tr("无法连接到服务器，请检查网络"));
+        }
+    });
 }
 
 void PaperTrackMainWindow::setVideoImage(const cv::Mat& image)
@@ -198,10 +205,10 @@ void PaperTrackMainWindow::setVideoImage(const cv::Mat& image)
         {
             if (ui.stackedWidget->currentIndex() == 0) {
                 ui.ImageLabel->clear(); // 清除图片
-                ui.ImageLabel->setText("                         没有图像输入"); // 恢复默认文本
+                ui.ImageLabel->setText(tr("                         没有图像输入")); // 恢复默认文本
             } else if (ui.stackedWidget->currentIndex() == 1) {
                 ui.ImageLabelCal->clear(); // 清除图片
-                ui.ImageLabelCal->setText("                         没有图像输入");
+                ui.ImageLabelCal->setText(tr("                         没有图像输入"));
             }
         }, Qt::QueuedConnection);
         return ;
@@ -231,6 +238,10 @@ void PaperTrackMainWindow::bound_pages() {
     });
     connect(ui.CalibrationPageButton, &QPushButton::clicked, [this] {
         ui.stackedWidget->setCurrentIndex(1);
+    });
+    connect(ui.SettingPageButton, &QPushButton::clicked, [this]
+    {
+        ui.stackedWidget->setCurrentIndex(2);
     });
 }
 
@@ -378,19 +389,19 @@ void PaperTrackMainWindow::setOnUseFilterClickedFunc(FuncWithVal func)
     onUseFilterClickedFunc = std::move(func);
 }
 
-void PaperTrackMainWindow::setSerialStatusLabel(const std::string& text) const
+void PaperTrackMainWindow::setSerialStatusLabel(const QString& text) const
 {
-    ui.SerialConnectLabel->setText(QString::fromStdString(text));
+    ui.SerialConnectLabel->setText(tr(text.toUtf8().constData()));
 }
 
-void PaperTrackMainWindow::setWifiStatusLabel(const std::string& text) const
+void PaperTrackMainWindow::setWifiStatusLabel(const QString& text) const
 {
-    ui.WifiConnectLabel->setText(QString::fromStdString(text));
+    ui.WifiConnectLabel->setText(text.toUtf8().constData());
 }
 
-void PaperTrackMainWindow::setIPText(const std::string& text) const
+void PaperTrackMainWindow::setIPText(const QString& text) const
 {
-    ui.textEdit->setText(QString::fromStdString(text));
+    ui.textEdit->setText(tr(text.toUtf8().constData()));
 }
 
 QPlainTextEdit* PaperTrackMainWindow::getLogText() const
@@ -422,17 +433,17 @@ void PaperTrackMainWindow::onSendButtonClicked()
 
     // 输入验证
     if (ssid == "请输入WIFI名字（仅支持2.4ghz）" || ssid.empty()) {
-        QMessageBox::warning(this, "输入错误", "请输入有效的WIFI名字");
+        QMessageBox::warning(this, tr("输入错误"), tr("请输入有效的WIFI名字"));
         return;
     }
 
     if (password == "请输入WIFI密码" || password.empty()) {
-        QMessageBox::warning(this, "输入错误", "请输入有效的密码");
+        QMessageBox::warning(this, tr("输入错误"), tr("请输入有效的密码"));
         return;
     }
 
     // 构建并发送数据包
-    LOG_INFO("已发送WiFi配置: SSID=" + ssid + ", PWD=" + password);
+    LOG_INFO("已发送WiFi配置: SSID = {}, PWD = {}", ssid, password);
     LOG_INFO("等待数据被发送后开始自动重启ESP32...");
     serial_port_manager->sendWiFiConfig(ssid, password);
 
@@ -498,7 +509,7 @@ void PaperTrackMainWindow::onSendBrightnessValue() const
     std::string packet = "A6" + brightness_str + "B6";
     serial_port_manager->write_data(packet);
     // 记录操作
-    LOG_INFO("已设置亮度: " + std::to_string(current_brightness));
+    LOG_INFO("已设置亮度: {}", current_brightness);
 }
 
 void PaperTrackMainWindow::setBeforeStop(FuncWithoutArgs func)
@@ -532,6 +543,10 @@ void PaperTrackMainWindow::stop()
     if (inference_thread.joinable())
     {
         inference_thread.join();
+    }
+    if (osc_send_thread.joinable())
+    {
+        osc_send_thread.join();
     }
     if (brightness_timer) {
         brightness_timer->stop();
@@ -626,7 +641,7 @@ void PaperTrackMainWindow::set_config(const PaperTrackerConfig& config)
         ui.TongueRightBar->setValue(config.amp_map.at("tongueRight"));
     } catch (std::exception& e)
     {
-        LOG_ERROR("配置文件中的振幅映射错误: " + std::string(e.what()));
+        LOG_ERROR("配置文件中的振幅映射错误: {}", e.what());
     }
     roi_rect = config.rect;
 }
@@ -755,10 +770,10 @@ void PaperTrackMainWindow::updateSerialLabel() const
 {
     if (serial_port_manager->status() == SerialStatus::OPENED)
     {
-        setSerialStatusLabel("有线模式面捕已连接");
+        setSerialStatusLabel("串口已连接");
     } else
     {
-        setSerialStatusLabel("有线模式面捕连接失败");
+        setSerialStatusLabel("串口连接失败");
     }
 }
 
@@ -777,14 +792,14 @@ void PaperTrackMainWindow::onCheckClientVersionClicked()
     // 2. 获取本地版本信息
     auto currentVersionOpt = updater->getCurrentVersion();
     if (!currentVersionOpt.has_value()) {
-        QMessageBox::critical(this, "错误", "无法获取当前客户端版本信息");
+        QMessageBox::critical(this, tr("错误"), tr("无法获取当前客户端版本信息"));
         return;
     }
     // 3. 如果版本不同，则执行更新
     if (remoteVersionOpt.value().version.tag != currentVersionOpt.value().version.tag) {
-        auto reply = QMessageBox::question(this, "版本检查",
-            "当前客户端版本不是最新版本是否更新？\n版本更新信息如下：\n" +
-            remoteVersionOpt.value().version.description,
+        auto reply = QMessageBox::question(this, tr("版本检查"),
+            tr(("当前客户端版本不是最新版本是否更新？\n版本更新信息如下：\n" +
+            remoteVersionOpt.value().version.description).toUtf8().constData()),
             QMessageBox::Yes | QMessageBox::No);
         if (reply == QMessageBox::Yes) {
             if (!updater->updateApplicationSync(this, remoteVersionOpt.value())) {
@@ -794,7 +809,7 @@ void PaperTrackMainWindow::onCheckClientVersionClicked()
             // 若更新成功，updateApplicationSync 内部会重启程序并退出当前程序
         }
     } else {
-        QMessageBox::information(this, "版本检查", "当前客户端版本已是最新版本");
+        QMessageBox::information(this, tr("版本检查"), tr("当前客户端版本已是最新版本"));
     }
 }
 
@@ -802,7 +817,7 @@ void PaperTrackMainWindow::onCheckFirmwareVersionClicked()
 {
     if (getSerialStatus() != SerialStatus::OPENED)
     {
-        QMessageBox::information(this, "固件版本", "有线模式面捕未连接，无法获取固件版本");
+        QMessageBox::information(this, tr("固件版本"), tr("有线模式面捕未连接，无法获取固件版本"));
         return ;
     }
     auto version = updater->getCurrentVersion();
@@ -810,14 +825,14 @@ void PaperTrackMainWindow::onCheckFirmwareVersionClicked()
     {
         if (version.value().version.firmware == getFirmwareVersion())
         {
-            QMessageBox::information(this, "固件版本", "固件版本已是最新");
+            QMessageBox::information(this, tr("固件版本"), tr("固件版本已是最新"));
         } else
         {
-            QMessageBox::information(this, "固件版本", "固件版本不是最新，建议烧录最新固件");
+            QMessageBox::information(this, tr("固件版本"), tr("固件版本不是最新，建议烧录最新固件"));
         }
     } else
     {
-        QMessageBox::critical(this, "错误", "无法获取最新固件版本信息");
+        QMessageBox::critical(this, tr("错误"), tr("无法获取最新固件版本信息"));
     }
 }
 
@@ -829,4 +844,9 @@ std::string PaperTrackMainWindow::getFirmwareVersion() const
 SerialStatus PaperTrackMainWindow::getSerialStatus() const
 {
     return serial_port_manager->status();
+}
+
+void PaperTrackMainWindow::set_osc_send_thead(FuncWithoutArgs func)
+{
+    osc_send_thread = std::thread(std::move(func));
 }
