@@ -15,6 +15,7 @@
 #include <QCoreApplication>
 #include <QThread>
 #include <updater.hpp>
+#include <QTranslator>
 
 void start_image_download(ESP32VideoStream& image_downloader, const std::string& camera_ip)
 {
