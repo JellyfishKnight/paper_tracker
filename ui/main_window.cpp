@@ -239,6 +239,10 @@ void PaperTrackMainWindow::bound_pages() {
     connect(ui.CalibrationPageButton, &QPushButton::clicked, [this] {
         ui.stackedWidget->setCurrentIndex(1);
     });
+    connect(ui.SettingPageButton, &QPushButton::clicked, [this]
+    {
+        ui.stackedWidget->setCurrentIndex(2);
+    });
 }
 
 // 添加事件过滤器实现
