@@ -109,7 +109,7 @@ private:
 
     float dt = 0.02;
     float q_factor = 5e-1;
-    float r_factor = 5e-4;
+    float r_factor = 5e-5;
 };
 
 #endif //BABBLE_INFERENCE_HPP
