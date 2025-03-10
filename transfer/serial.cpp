@@ -153,7 +153,7 @@ std::string SerialPortManager::FindEsp32S3Port() {
 
                 if (RegQueryValueExA(hKey, "PortName", nullptr, &dwType, reinterpret_cast<LPBYTE>(portName), &dwSize) == ERROR_SUCCESS) {
                     targetPort = portName;
-                    LOG_INFO("找到ESP32-S3设备的COM端口: {}", targetPort);
+                    LOG_INFO("找到面捕设备的COM端口: {}", targetPort);
                 }
 
                 RegCloseKey(hKey);
@@ -206,7 +206,7 @@ std::string SerialPortManager::FindEsp32S3Port() {
     SetupDiDestroyDeviceInfoList(hDevInfo);
 
     if (targetPort.empty()) {
-        LOG_DEBUG("未找到ESP32-S3设备的COM端口");
+        LOG_DEBUG("未找到面捕设备的COM端口");
     }
 
     return targetPort;

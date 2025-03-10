@@ -68,7 +68,7 @@ bool ESP32VideoStream::init(const std::string& url)
         }
     }
 
-    LOG_INFO("初始化WebSocket视频流，URL: {}", currentStreamUrl);
+    LOG_DEBUG("初始化WebSocket视频流，URL: {}", currentStreamUrl);
     return true;
 }
 
