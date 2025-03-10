@@ -770,10 +770,10 @@ void PaperTrackMainWindow::updateSerialLabel() const
 {
     if (serial_port_manager->status() == SerialStatus::OPENED)
     {
-        setSerialStatusLabel("串口已连接");
+        setSerialStatusLabel("面捕有线模式已连接");
     } else
     {
-        setSerialStatusLabel("串口连接失败");
+        setSerialStatusLabel("面捕有线模式连接失败");
     }
 }
 
