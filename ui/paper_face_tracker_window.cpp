@@ -1,5 +1,5 @@
 //
-// Created by JellyfishKnight on 2025/2/25.
+// Created by JellyfishKnight on 25-3-11.
 //
 /*
  * PaperTracker - 面部追踪应用程序
@@ -17,8 +17,8 @@
  * Copyright 2023 Sameer Suri
  * Licensed under the Apache License, Version 2.0
  */
-#include "main_window.hpp"
-#include "ui_main_window.h"
+#include "paper_face_tracker_window.hpp"
+#include "ui_paper_face_tracker_window.h"
 #include <QMessageBox>
 #include <codecvt>
 #include <locale>
@@ -27,8 +27,9 @@
 #include <QProcess>
 #include <QCoreApplication>
 #include <roi_event.hpp>
+#include <opencv2/imgproc.hpp>
 
-PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWidget *parent)
+PaperFaceTrackMainWindow::PaperFaceTrackMainWindow(QWidget *parent)
     : QWidget(parent), config(config)
 {
     // 基本UI设置
@@ -117,7 +118,28 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
             LOG_ERROR("VRCFT异常退出");
         }
     });
-
+    inference = std::make_shared<Inference>();
+    osc_manager = std::make_shared<OscManager>();
+    config_writer = std::make_shared<ConfigWriter>("./face_tracker_config.json");
+    set_config(config_writer->get_config<PaperFaceTrackerConfig>());
+    // Load model
+    LOG_INFO("正在加载推理模型...");
+    try {
+        inference->load_model("./model/model.onnx");
+        LOG_INFO("模型加载完成");
+    } catch (const std::exception& e) {
+        // 使用Qt方式记录日志，而不是minilog
+        LOG_ERROR("错误: 模型加载异常: {}", e.what());
+    }
+    // 初始化OSC管理器
+    LOG_INFO("正在初始化OSC...");
+    if (osc_manager->init("127.0.0.1", 8888)) {
+        osc_manager->setLocationPrefix("");
+        osc_manager->setMultiplier(1.0f);
+        LOG_INFO("OSC初始化成功");
+    } else {
+        LOG_ERROR("OSC初始化失败，请检查网络连接");
+    }
     // 初始化串口和wifi
     serial_port_manager = std::make_shared<SerialPortManager>();
     image_downloader = std::make_shared<ESP32VideoStream>();
@@ -196,9 +218,10 @@ PaperTrackMainWindow::PaperTrackMainWindow(const PaperTrackerConfig& config, QWi
             ui.ClientStatusLabel->setText(tr("无法连接到服务器，请检查网络"));
         }
     });
+    create_sub_threads();
 }
 
-void PaperTrackMainWindow::setVideoImage(const cv::Mat& image)
+void PaperFaceTrackMainWindow::setVideoImage(const cv::Mat& image)
 {
     if (image.empty())
     {
@@ -230,9 +253,18 @@ void PaperTrackMainWindow::setVideoImage(const cv::Mat& image)
     }, Qt::QueuedConnection);
 }
 
-PaperTrackMainWindow::~PaperTrackMainWindow() = default;
+PaperFaceTrackMainWindow::~PaperFaceTrackMainWindow() {
+    LOG_INFO("开始自动保存");
+    if (config_writer->write_config(generate_config()))
+    {
+        LOG_INFO("已保存配置");
+    } else
+    {
+        LOG_ERROR("配置文件保存失败");
+    }
+}
 
-void PaperTrackMainWindow::bound_pages() {
+void PaperFaceTrackMainWindow::bound_pages() {
     // 页面导航逻辑
     connect(ui.MainPageButton, &QPushButton::clicked, [this] {
         ui.stackedWidget->setCurrentIndex(0);
@@ -247,7 +279,7 @@ void PaperTrackMainWindow::bound_pages() {
 }
 
 // 添加事件过滤器实现
-bool PaperTrackMainWindow::eventFilter(QObject *obj, QEvent *event)
+bool PaperFaceTrackMainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     // 处理焦点获取事件
     if (event->type() == QEvent::FocusIn) {
@@ -280,7 +312,7 @@ bool PaperTrackMainWindow::eventFilter(QObject *obj, QEvent *event)
 }
 
 // 根据模型输出更新校准页面的进度条
-void PaperTrackMainWindow::updateCalibrationProgressBars(
+void PaperFaceTrackMainWindow::updateCalibrationProgressBars(
     const std::vector<float>& output,
     const std::unordered_map<std::string, size_t>& blendShapeIndexMap
 ) {
@@ -343,40 +375,40 @@ void PaperTrackMainWindow::updateCalibrationProgressBars(
     }, Qt::QueuedConnection);
 }
 
-void PaperTrackMainWindow::connect_callbacks()
+void PaperFaceTrackMainWindow::connect_callbacks()
 {
     brightness_timer = std::make_shared<QTimer>();
     brightness_timer->setSingleShot(true);
-    connect(brightness_timer.get(), &QTimer::timeout, this, &PaperTrackMainWindow::onSendBrightnessValue);
+    connect(brightness_timer.get(), &QTimer::timeout, this, &PaperFaceTrackMainWindow::onSendBrightnessValue);
     // functions
-    connect(ui.BrightnessBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onBrightnessChanged);
-    connect(ui.RotateImageBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onRotateAngleChanged);
-    connect(ui.restart_Button, &QPushButton::clicked, this, &PaperTrackMainWindow::onRestartButtonClicked);
-    connect(ui.FlashFirmwareButton, &QPushButton::clicked, this, &PaperTrackMainWindow::onFlashButtonClicked);
-    connect(ui.UseFilterBox, &QCheckBox::checkStateChanged, this, &PaperTrackMainWindow::onUseFilterClicked);
-    connect(ui.wifi_send_Button, &QPushButton::clicked, this, &PaperTrackMainWindow::onSendButtonClicked);
-    connect(ui.EnergyModeBox, &QComboBox::currentIndexChanged, this, &PaperTrackMainWindow::onEnergyModeChanged);
-    connect(ui.SaveParamConfigButton, &QPushButton::clicked, this, &PaperTrackMainWindow::onSaveConfigButtonClicked);
+    connect(ui.BrightnessBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onBrightnessChanged);
+    connect(ui.RotateImageBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onRotateAngleChanged);
+    connect(ui.restart_Button, &QPushButton::clicked, this, &PaperFaceTrackMainWindow::onRestartButtonClicked);
+    connect(ui.FlashFirmwareButton, &QPushButton::clicked, this, &PaperFaceTrackMainWindow::onFlashButtonClicked);
+    connect(ui.UseFilterBox, &QCheckBox::checkStateChanged, this, &PaperFaceTrackMainWindow::onUseFilterClicked);
+    connect(ui.wifi_send_Button, &QPushButton::clicked, this, &PaperFaceTrackMainWindow::onSendButtonClicked);
+    connect(ui.EnergyModeBox, &QComboBox::currentIndexChanged, this, &PaperFaceTrackMainWindow::onEnergyModeChanged);
+    connect(ui.SaveParamConfigButton, &QPushButton::clicked, this, &PaperFaceTrackMainWindow::onSaveConfigButtonClicked);
 
-    connect(ui.JawOpenBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onJawOpenChanged);
-    connect(ui.JawLeftBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onJawLeftChanged);
-    connect(ui.JawRightBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onJawRightChanged);
-    connect(ui.MouthLeftBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onMouthLeftChanged);
-    connect(ui.MouthRightBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onMouthRightChanged);
-    connect(ui.TongueOutBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onTongueOutChanged);
-    connect(ui.TongueLeftBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onTongueLeftChanged);
-    connect(ui.TongueRightBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onTongueRightChanged);
-    connect(ui.TongueUpBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onTongueUpChanged);
-    connect(ui.TongueDownBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onTongueDownChanged);
-    connect(ui.CheekPuffLeftBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onCheeckPuffLeftChanged);
-    connect(ui.CheekPuffRightBar, &QScrollBar::valueChanged, this, &PaperTrackMainWindow::onCheeckPuffRightChanged);
+    connect(ui.JawOpenBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onJawOpenChanged);
+    connect(ui.JawLeftBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onJawLeftChanged);
+    connect(ui.JawRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onJawRightChanged);
+    connect(ui.MouthLeftBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onMouthLeftChanged);
+    connect(ui.MouthRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onMouthRightChanged);
+    connect(ui.TongueOutBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onTongueOutChanged);
+    connect(ui.TongueLeftBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onTongueLeftChanged);
+    connect(ui.TongueRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onTongueRightChanged);
+    connect(ui.TongueUpBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onTongueUpChanged);
+    connect(ui.TongueDownBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onTongueDownChanged);
+    connect(ui.CheekPuffLeftBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onCheeckPuffLeftChanged);
+    connect(ui.CheekPuffRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackMainWindow::onCheeckPuffRightChanged);
 
     // update
-    connect(ui.CheckClientVersionButton, &QPushButton::clicked, this, &PaperTrackMainWindow::onCheckClientVersionClicked);
-    connect(ui.CheckFirmwareVersionButton, &QPushButton::clicked, this, &PaperTrackMainWindow::onCheckFirmwareVersionClicked);
+    connect(ui.CheckClientVersionButton, &QPushButton::clicked, this, &PaperFaceTrackMainWindow::onCheckClientVersionClicked);
+    connect(ui.CheckFirmwareVersionButton, &QPushButton::clicked, this, &PaperFaceTrackMainWindow::onCheckFirmwareVersionClicked);
 }
 
-float PaperTrackMainWindow::getRotateAngle() const
+float PaperFaceTrackMainWindow::getRotateAngle() const
 {
     auto rotate_angle = static_cast<float>(current_rotate_angle);
     rotate_angle = rotate_angle / (static_cast<float>(ui.RotateImageBar->maximum()) -
@@ -385,47 +417,47 @@ float PaperTrackMainWindow::getRotateAngle() const
 }
 
 
-void PaperTrackMainWindow::setOnUseFilterClickedFunc(FuncWithVal func)
+void PaperFaceTrackMainWindow::setOnUseFilterClickedFunc(FuncWithVal func)
 {
     onUseFilterClickedFunc = std::move(func);
 }
 
-void PaperTrackMainWindow::setSerialStatusLabel(const QString& text) const
+void PaperFaceTrackMainWindow::setSerialStatusLabel(const QString& text) const
 {
     ui.SerialConnectLabel->setText(tr(text.toUtf8().constData()));
 }
 
-void PaperTrackMainWindow::setWifiStatusLabel(const QString& text) const
+void PaperFaceTrackMainWindow::setWifiStatusLabel(const QString& text) const
 {
     ui.WifiConnectLabel->setText(text.toUtf8().constData());
 }
 
-void PaperTrackMainWindow::setIPText(const QString& text) const
+void PaperFaceTrackMainWindow::setIPText(const QString& text) const
 {
     ui.textEdit->setText(tr(text.toUtf8().constData()));
 }
 
-QPlainTextEdit* PaperTrackMainWindow::getLogText() const
+QPlainTextEdit* PaperFaceTrackMainWindow::getLogText() const
 {
     return ui.LogText;
 }
 
-Rect PaperTrackMainWindow::getRoiRect()
+Rect PaperFaceTrackMainWindow::getRoiRect()
 {
     return roi_rect;
 }
 
-std::string PaperTrackMainWindow::getSSID() const
+std::string PaperFaceTrackMainWindow::getSSID() const
 {
     return ui.SSIDText->toPlainText().toStdString();
 }
 
-std::string PaperTrackMainWindow::getPassword() const
+std::string PaperFaceTrackMainWindow::getPassword() const
 {
     return ui.PasswordText->toPlainText().toStdString();
 }
 
-void PaperTrackMainWindow::onSendButtonClicked()
+void PaperFaceTrackMainWindow::onSendButtonClicked()
 {
     // onSendButtonClickedFunc();
     // 获取SSID和密码
@@ -454,7 +486,7 @@ void PaperTrackMainWindow::onSendButtonClicked()
     });
 }
 
-void PaperTrackMainWindow::onRestartButtonClicked()
+void PaperFaceTrackMainWindow::onRestartButtonClicked()
 {
     serial_port_manager->stop_heartbeat_timer();
     image_downloader->stop_heartbeat_timer();
@@ -465,18 +497,14 @@ void PaperTrackMainWindow::onRestartButtonClicked()
     image_downloader->start_heartbeat_timer();
 }
 
-void PaperTrackMainWindow::onUseFilterClicked(int value) const
+void PaperFaceTrackMainWindow::onUseFilterClicked(int value) const
 {
     QTimer::singleShot(10, this, [this, value] {
-        while (onUseFilterClickedFunc == nullptr)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-        onUseFilterClickedFunc(value);
+        inference->set_use_filter(value);
     });
 }
 
-void PaperTrackMainWindow::onFlashButtonClicked()
+void PaperFaceTrackMainWindow::onFlashButtonClicked()
 {
     serial_port_manager->stop_heartbeat_timer();
     image_downloader->stop_heartbeat_timer();
@@ -487,19 +515,19 @@ void PaperTrackMainWindow::onFlashButtonClicked()
     image_downloader->start_heartbeat_timer();
 }
 
-void PaperTrackMainWindow::onBrightnessChanged(int value) {
+void PaperFaceTrackMainWindow::onBrightnessChanged(int value) {
     // 更新当前亮度值
     current_brightness = value;
     // 重置定时器，如果用户500毫秒内没有再次改变值，就发送数据包
     brightness_timer->start(100);
 }
 
-void PaperTrackMainWindow::onRotateAngleChanged(int value)
+void PaperFaceTrackMainWindow::onRotateAngleChanged(int value)
 {
     current_rotate_angle = value;
 }
 
-void PaperTrackMainWindow::onSendBrightnessValue() const
+void PaperFaceTrackMainWindow::onSendBrightnessValue() const
 {
     // 发送亮度控制命令 - 确保亮度值为三位数字
     std::string brightness_str = std::to_string(current_brightness);
@@ -513,27 +541,22 @@ void PaperTrackMainWindow::onSendBrightnessValue() const
     LOG_INFO("已设置亮度: {}", current_brightness);
 }
 
-void PaperTrackMainWindow::setBeforeStop(FuncWithoutArgs func)
-{
-    beforeStopFunc = std::move(func);
-}
-
-void PaperTrackMainWindow::set_update_thread(FuncWithoutArgs func)
+void PaperFaceTrackMainWindow::set_update_thread(FuncWithoutArgs func)
 {
     update_thread = std::thread(std::move(func));
 }
 
-void PaperTrackMainWindow::set_inference_thread(FuncWithoutArgs func)
+void PaperFaceTrackMainWindow::set_inference_thread(FuncWithoutArgs func)
 {
     inference_thread = std::thread(std::move(func));
 }
 
-bool PaperTrackMainWindow::is_running() const
+bool PaperFaceTrackMainWindow::is_running() const
 {
     return app_is_running;
 }
 
-void PaperTrackMainWindow::stop()
+void PaperFaceTrackMainWindow::stop()
 {
     LOG_INFO("正在关闭系统...");
     app_is_running = false;
@@ -555,10 +578,8 @@ void PaperTrackMainWindow::stop()
     }
     serial_port_manager->stop();
     image_downloader->stop();
-    if (beforeStopFunc)
-    {
-        beforeStopFunc();
-    }
+    inference.reset();
+    osc_manager->close();
     if (vrcftProcess) {
         if (vrcftProcess->state() == QProcess::Running) {
             vrcftProcess->terminate();
@@ -572,7 +593,7 @@ void PaperTrackMainWindow::stop()
     LOG_INFO("系统已安全关闭");
 }
 
-void PaperTrackMainWindow::onEnergyModeChanged(int index)
+void PaperFaceTrackMainWindow::onEnergyModeChanged(int index)
 {
     if (index == 0)
     {
@@ -586,14 +607,14 @@ void PaperTrackMainWindow::onEnergyModeChanged(int index)
     }
 }
 
-int PaperTrackMainWindow::get_max_fps() const
+int PaperFaceTrackMainWindow::get_max_fps() const
 {
     return max_fps;
 }
 
-PaperTrackerConfig PaperTrackMainWindow::generate_config() const
+PaperFaceTrackerConfig PaperFaceTrackMainWindow::generate_config() const
 {
-    PaperTrackerConfig config;
+    PaperFaceTrackerConfig config;
     config.brightness = current_brightness;
     config.rotate_angle = current_rotate_angle;
     config.energy_mode = ui.EnergyModeBox->currentIndex();
@@ -617,7 +638,7 @@ PaperTrackerConfig PaperTrackMainWindow::generate_config() const
     return config;
 }
 
-void PaperTrackMainWindow::set_config(const PaperTrackerConfig& config)
+void PaperFaceTrackMainWindow::set_config(const PaperFaceTrackerConfig& config)
 {
     current_brightness = config.brightness;
     current_rotate_angle = config.rotate_angle;
@@ -647,82 +668,82 @@ void PaperTrackMainWindow::set_config(const PaperTrackerConfig& config)
     roi_rect = config.rect;
 }
 
-void PaperTrackMainWindow::setOnSaveConfigButtonClickedFunc(FuncWithoutArgs func)
+
+void PaperFaceTrackMainWindow::onSaveConfigButtonClicked()
 {
-    onSaveConfigButtonClickedFunc = std::move(func);
+    LOG_INFO("保存配置中...");
+    config = std::move(generate_config());
+    if (config_writer->write_config(config))
+    {
+        LOG_INFO("已保存配置");
+    } else
+    {
+        LOG_ERROR("配置文件保存失败");
+    }
 }
 
-void PaperTrackMainWindow::onSaveConfigButtonClicked() const
+
+void PaperFaceTrackMainWindow::onCheeckPuffLeftChanged(int value) const
 {
-    onSaveConfigButtonClickedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::setOnAmpMapChangedFunc(FuncWithoutArgs func)
+void PaperFaceTrackMainWindow::onCheeckPuffRightChanged(int value) const
 {
-    onAmpMapChangedFunc = std::move(func);
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onCheeckPuffLeftChanged(int value) const
+void PaperFaceTrackMainWindow::onJawOpenChanged(int value)
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onCheeckPuffRightChanged(int value)
+void PaperFaceTrackMainWindow::onJawLeftChanged(int value)
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onJawOpenChanged(int value)
+void PaperFaceTrackMainWindow::onJawRightChanged(int value)
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onJawLeftChanged(int value)
+void PaperFaceTrackMainWindow::onMouthLeftChanged(int value) const
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onJawRightChanged(int value)
+void PaperFaceTrackMainWindow::onMouthRightChanged(int value)
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onMouthLeftChanged(int value)
+void PaperFaceTrackMainWindow::onTongueOutChanged(int value)
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onMouthRightChanged(int value)
+void PaperFaceTrackMainWindow::onTongueLeftChanged(int value)
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onTongueOutChanged(int value)
+void PaperFaceTrackMainWindow::onTongueRightChanged(int value)
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onTongueLeftChanged(int value)
+void PaperFaceTrackMainWindow::onTongueUpChanged(int value)
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onTongueRightChanged(int value)
+void PaperFaceTrackMainWindow::onTongueDownChanged(int value) const
 {
-    onAmpMapChangedFunc();
+    inference->set_amp_map(getAmpMap());
 }
 
-void PaperTrackMainWindow::onTongueUpChanged(int value)
-{
-    onAmpMapChangedFunc();
-}
-
-void PaperTrackMainWindow::onTongueDownChanged(int value)
-{
-    onAmpMapChangedFunc();
-}
-
-std::unordered_map<std::string, int> PaperTrackMainWindow::getAmpMap() const
+std::unordered_map<std::string, int> PaperFaceTrackMainWindow::getAmpMap() const
 {
     return {
         {"cheekPuffLeft", ui.CheekPuffLeftBar->value()},
@@ -740,8 +761,12 @@ std::unordered_map<std::string, int> PaperTrackMainWindow::getAmpMap() const
     };
 }
 
-void PaperTrackMainWindow::start_image_download() const
+void PaperFaceTrackMainWindow::start_image_download() const
 {
+    if (image_downloader->isStreaming())
+    {
+        image_downloader->stop();
+    }
     // 开始下载图片 - 修改为支持WebSocket协议
     // 检查URL格式
     const std::string& url = current_ip_;
@@ -749,14 +774,14 @@ void PaperTrackMainWindow::start_image_download() const
         url.substr(0, 5) == "ws://" || url.substr(0, 6) == "wss://") {
         // URL已经包含协议前缀，直接使用
         image_downloader->init(url);
-        } else {
-            // 添加默认ws://前缀
-            image_downloader->init("ws://" + url);
-        }
+    } else {
+        // 添加默认ws://前缀
+        image_downloader->init("ws://" + url);
+    }
     image_downloader->start();
 }
 
-void PaperTrackMainWindow::updateWifiLabel() const
+void PaperFaceTrackMainWindow::updateWifiLabel() const
 {
     if (image_downloader->isStreaming())
     {
@@ -767,7 +792,7 @@ void PaperTrackMainWindow::updateWifiLabel() const
     }
 }
 
-void PaperTrackMainWindow::updateSerialLabel() const
+void PaperFaceTrackMainWindow::updateSerialLabel() const
 {
     if (serial_port_manager->status() == SerialStatus::OPENED)
     {
@@ -778,12 +803,12 @@ void PaperTrackMainWindow::updateSerialLabel() const
     }
 }
 
-cv::Mat PaperTrackMainWindow::getVideoImage() const
+cv::Mat PaperFaceTrackMainWindow::getVideoImage() const
 {
     return std::move(image_downloader->getLatestFrame());
 }
 
-void PaperTrackMainWindow::onCheckClientVersionClicked()
+void PaperFaceTrackMainWindow::onCheckClientVersionClicked()
 {
     // 1. 同步获取远程版本信息
     auto remoteVersionOpt = updater->getClientVersionSync(this);
@@ -814,7 +839,7 @@ void PaperTrackMainWindow::onCheckClientVersionClicked()
     }
 }
 
-void PaperTrackMainWindow::onCheckFirmwareVersionClicked()
+void PaperFaceTrackMainWindow::onCheckFirmwareVersionClicked()
 {
     if (getSerialStatus() != SerialStatus::OPENED)
     {
@@ -837,17 +862,171 @@ void PaperTrackMainWindow::onCheckFirmwareVersionClicked()
     }
 }
 
-std::string PaperTrackMainWindow::getFirmwareVersion() const
+std::string PaperFaceTrackMainWindow::getFirmwareVersion() const
 {
     return firmware_version;
 }
 
-SerialStatus PaperTrackMainWindow::getSerialStatus() const
+SerialStatus PaperFaceTrackMainWindow::getSerialStatus() const
 {
     return serial_port_manager->status();
 }
 
-void PaperTrackMainWindow::set_osc_send_thead(FuncWithoutArgs func)
+void PaperFaceTrackMainWindow::set_osc_send_thead(FuncWithoutArgs func)
 {
     osc_send_thread = std::thread(std::move(func));
+}
+
+void PaperFaceTrackMainWindow::create_sub_threads()
+{
+    update_thread = std::thread([this]()
+    {
+        auto last_time = std::chrono::high_resolution_clock::now();
+        double fps_total = 0;
+        double fps_count = 0;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        while (is_running())
+        {
+            updateWifiLabel();
+            updateSerialLabel();
+            auto start_time = std::chrono::high_resolution_clock::now();
+            try {
+                if (fps_total > 1000)
+                {
+                    fps_count = 0;
+                    fps_total = 0;
+                }
+                // caculate fps
+                auto start = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(start - last_time);
+                last_time = start;
+                auto fps = 1000.0 / static_cast<double>(duration.count());
+                fps_total += fps;
+                fps_count += 1;
+                fps = fps_total/fps_count;
+                cv::Mat frame = getVideoImage();
+                if (!frame.empty())
+                {
+                    auto rotate_angle = getRotateAngle();
+                    cv::resize(frame, frame, cv::Size(280, 280), cv::INTER_NEAREST);
+                    int y = frame.rows / 2;
+                    int x = frame.cols / 2;
+                    auto rotate_matrix = cv::getRotationMatrix2D(cv::Point(x, y), rotate_angle, 1);
+                    cv::warpAffine(frame, frame, rotate_matrix, frame.size(), cv::INTER_NEAREST);
+                    auto roi_rect = getRoiRect();
+                    // 显示图像
+                    cv::rectangle(frame, roi_rect.rect, cv::Scalar(0, 255, 0), 2);
+                }
+                // draw rect on frame
+                cv::Mat show_image;
+                if (!frame.empty())
+                {
+                    show_image = frame;
+                }
+                setVideoImage(show_image);
+                // 控制帧率
+            } catch (const std::exception& e) {
+                // 使用Qt方式记录日志，而不是minilog
+                QMetaObject::invokeMethod(this, [&e]() {
+                    LOG_ERROR("错误, 视频处理异常: {}", e.what());
+                }, Qt::QueuedConnection);
+            }
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count ();
+            int delay_ms = max(0, static_cast<int>(1000.0 / min(get_max_fps() + 30, 50) - elapsed));
+            // LOG_DEBUG("UIFPS:" +  std::to_string(min(get_max_fps() + 30, 60)));
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+        }
+    });
+
+    inference_thread = std::thread([this] ()
+    {
+        auto last_time = std::chrono::high_resolution_clock::now();
+        double fps_total = 0;
+        double fps_count = 0;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        while (is_running())
+        {
+            if (fps_total > 1000)
+            {
+                fps_count = 0;
+                fps_total = 0;
+            }
+            // calculate fps
+            auto start = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(start - last_time);
+            last_time = start;
+            auto fps = 1000.0 / static_cast<double>(duration.count());
+            fps_total += fps;
+            fps_count += 1;
+            fps = fps_total/fps_count;
+            LOG_DEBUG("模型FPS： {}", fps);
+
+            auto start_time = std::chrono::high_resolution_clock::now();
+            // 设置时间序列
+            inference->set_dt(duration.count() / 1000.0);
+
+            auto frame = getVideoImage();
+            // 推理处理
+            if (!frame.empty())
+            {
+                auto rotate_angle = getRotateAngle();
+                cv::resize(frame, frame, cv::Size(280, 280), cv::INTER_NEAREST);
+                int y = frame.rows / 2;
+                int x = frame.cols / 2;
+                auto rotate_matrix = cv::getRotationMatrix2D(cv::Point(x, y), rotate_angle, 1);
+                cv::warpAffine(frame, frame, rotate_matrix, frame.size(), cv::INTER_NEAREST);
+                cv::Mat infer_frame;
+                infer_frame = frame.clone();
+                auto roi_rect = getRoiRect();
+                if (!roi_rect.rect.empty() && roi_rect.is_roi_end)
+                {
+                    infer_frame = infer_frame(roi_rect.rect);
+                }
+                inference->inference(infer_frame);
+            }
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+            int delay_ms = max(0, static_cast<int>(1000.0 / get_max_fps() - elapsed));
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+        }
+    });
+
+    osc_send_thread = std::thread([this] ()
+    {
+        auto last_time = std::chrono::high_resolution_clock::now();
+        double fps_total = 0;
+        double fps_count = 0;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        while (is_running())
+        {
+         if (fps_total > 1000)
+         {
+             fps_count = 0;
+             fps_total = 0;
+         }
+         // calculate fps
+         auto start = std::chrono::high_resolution_clock::now();
+         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(start - last_time);
+         last_time = start;
+         auto fps = 1000.0 / static_cast<double>(duration.count());
+         fps_total += fps;
+         fps_count += 1;
+         fps = fps_total/fps_count;
+         auto start_time = std::chrono::high_resolution_clock::now();
+
+         inference->set_dt(duration.count() / 1000.0);
+         // 发送OSC数据
+         std::vector<float> output = inference->get_output();
+         if (!output.empty()) {
+             updateCalibrationProgressBars(output, inference->getBlendShapeIndexMap());
+             osc_manager->sendModelOutput(output);
+         }
+
+         auto end_time = std::chrono::high_resolution_clock::now();
+         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+         int delay_ms = max(0, static_cast<int>(1000.0 / 66.0 - elapsed));
+         std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+        }
+    });
 }
