@@ -30,22 +30,22 @@ public:
     {
         if (PaperTrackerMainWindow->objectName().isEmpty())
             PaperTrackerMainWindow->setObjectName("PaperTrackerMainWindow");
-        PaperTrackerMainWindow->resize(347, 448);
+        PaperTrackerMainWindow->resize(585, 459);
         FaceTrackerButton = new QPushButton(PaperTrackerMainWindow);
         FaceTrackerButton->setObjectName("FaceTrackerButton");
-        FaceTrackerButton->setGeometry(QRect(70, 160, 201, 81));
+        FaceTrackerButton->setGeometry(QRect(60, 220, 201, 81));
         EyeTrackerButton = new QPushButton(PaperTrackerMainWindow);
         EyeTrackerButton->setObjectName("EyeTrackerButton");
-        EyeTrackerButton->setGeometry(QRect(70, 250, 201, 81));
+        EyeTrackerButton->setGeometry(QRect(310, 220, 201, 81));
         LOGOLabel = new QLabel(PaperTrackerMainWindow);
         LOGOLabel->setObjectName("LOGOLabel");
-        LOGOLabel->setGeometry(QRect(20, 20, 301, 121));
+        LOGOLabel->setGeometry(QRect(-10, 0, 601, 181));
         ClientUpdateButton = new QPushButton(PaperTrackerMainWindow);
         ClientUpdateButton->setObjectName("ClientUpdateButton");
-        ClientUpdateButton->setGeometry(QRect(120, 340, 101, 51));
+        ClientUpdateButton->setGeometry(QRect(230, 330, 101, 51));
         ClientStatusLabel = new QLabel(PaperTrackerMainWindow);
         ClientStatusLabel->setObjectName("ClientStatusLabel");
-        ClientStatusLabel->setGeometry(QRect(70, 410, 201, 20));
+        ClientStatusLabel->setGeometry(QRect(180, 410, 201, 20));
         QFont font;
         font.setBold(true);
         font.setItalic(true);

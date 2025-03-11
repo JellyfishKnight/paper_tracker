@@ -17,21 +17,19 @@
 PaperTrackerMainWindow::PaperTrackerMainWindow(QWidget *parent) :
     QWidget(parent) {
     ui.setupUi(this);
-    setFixedSize(347, 448);
+    setFixedSize(585, 459);
     // set logo
     QFile Logo = QFile("./resources/logo.png");
     Logo.open(QIODevice::ReadOnly);
     QPixmap pixmap;
     pixmap.loadFromData(Logo.readAll());
-    auto final_map = pixmap.scaled(ui.LOGOLabel->size(), Qt::KeepAspectRatio);
+    auto final_map = pixmap.scaled(ui.LOGOLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     Logo.close();
+    ui.LOGOLabel->setAlignment(Qt::AlignCenter);
+    ui.LOGOLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui.LOGOLabel->setScaledContents(true);
     ui.LOGOLabel->setPixmap(final_map);
     ui.LOGOLabel->update();
-    ui.LOGOLabel->setAlignment(Qt::AlignCenter);
-    ui.LOGOLabel->setFixedSize(200, 200);
-    ui.LOGOLabel->setGeometry(0, 0, 200, 200);
-    ui.LOGOLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     updater = std::make_shared<Updater>();
     connect_callbacks();

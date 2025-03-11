@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>347</width>
-    <height>448</height>
+    <width>585</width>
+    <height>459</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QPushButton" name="FaceTrackerButton">
    <property name="geometry">
     <rect>
-     <x>70</x>
-     <y>160</y>
+     <x>60</x>
+     <y>220</y>
      <width>201</width>
      <height>81</height>
     </rect>
@@ -29,8 +29,8 @@
   <widget class="QPushButton" name="EyeTrackerButton">
    <property name="geometry">
     <rect>
-     <x>70</x>
-     <y>250</y>
+     <x>310</x>
+     <y>220</y>
      <width>201</width>
      <height>81</height>
     </rect>
@@ -42,10 +42,10 @@
   <widget class="QLabel" name="LOGOLabel">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>10</y>
-     <width>341</width>
-     <height>131</height>
+     <x>-10</x>
+     <y>0</y>
+     <width>601</width>
+     <height>181</height>
     </rect>
    </property>
    <property name="text">
@@ -55,8 +55,8 @@
   <widget class="QPushButton" name="ClientUpdateButton">
    <property name="geometry">
     <rect>
-     <x>120</x>
-     <y>340</y>
+     <x>230</x>
+     <y>330</y>
      <width>101</width>
      <height>51</height>
     </rect>
@@ -68,7 +68,7 @@
   <widget class="QLabel" name="ClientStatusLabel">
    <property name="geometry">
     <rect>
-     <x>70</x>
+     <x>180</x>
      <y>410</y>
      <width>201</width>
      <height>20</height>
