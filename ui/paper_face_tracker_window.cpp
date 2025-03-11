@@ -174,6 +174,7 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
     {
         setSerialStatusLabel("有线模式面捕连接失败");
         LOG_WARN("有线模式面捕未连接，尝试从配置文件中读取地址...");
+        config = config_writer->get_config<PaperFaceTrackerConfig>();
         if (!config.wifi_ip.empty())
         {
             LOG_INFO("从配置文件中读取地址成功");
@@ -889,7 +890,7 @@ void PaperFaceTrackerWindow::create_sub_threads()
             fps_total += fps;
             fps_count += 1;
             fps = fps_total/fps_count;
-            LOG_DEBUG("模型FPS： {}", fps);
+            // LOG_DEBUG("模型FPS： {}", fps);
 
             auto start_time = std::chrono::high_resolution_clock::now();
             // 设置时间序列
