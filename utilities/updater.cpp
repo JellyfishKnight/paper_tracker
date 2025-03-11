@@ -9,11 +9,8 @@
 
 std::optional<Version> Updater::getClientVersionSync(QWidget* window) {
     QNetworkAccessManager manager;
-    std::cout << "Geting" << std::endl;
     QNetworkRequest request(QUrl("http://47.116.163.1/version.json"));
     QNetworkReply* reply = manager.get(request);
-
-    std::cout << "Get" << std::endl;
 
     QEventLoop loop;
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);

@@ -72,6 +72,8 @@ void Inference::load_model(const std::string &model_path) {
         // 创建会话
         session_ = std::make_shared<Ort::Session>(env, wmodel_path.c_str(), session_options);
 
+        io_binding_ = std::make_shared<Ort::IoBinding>(*session_);
+
         // 初始化输入和输出名称
         init_io_names();
 
@@ -221,17 +223,16 @@ void Inference::run_model() {
             input_shapes_[0].size()
         );
 
-        static Ort::IoBinding io_binding{*session_};
         // 绑定输入
-        io_binding.BindInput(input_name_ptrs_[0], input_tensor_);
+        io_binding_->BindInput(input_name_ptrs_[0], input_tensor_);
         // 绑定输出
         for (size_t i = 0; i < output_name_ptrs_.size(); i++) {
-            io_binding.BindOutput(output_name_ptrs_[i], memory_info_);
+            io_binding_->BindOutput(output_name_ptrs_[i], memory_info_);
         }
         // 运行推理
-        session_->Run(Ort::RunOptions{nullptr}, io_binding);
+        session_->Run(Ort::RunOptions{nullptr}, *io_binding_);
         // 获取输出
-        output_tensors_ = io_binding.GetOutputValues();
+        output_tensors_ = io_binding_->GetOutputValues();
     } catch (const std::exception& e) {
         LOG_ERROR("推理错误: {}", e.what());
     }

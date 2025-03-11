@@ -68,7 +68,7 @@ bool ESP32VideoStream::init(const std::string& url)
         }
     }
 
-    LOG_INFO("初始化WebSocket视频流，URL: {}", currentStreamUrl);
+    LOG_DEBUG("初始化WebSocket视频流，URL: {}", currentStreamUrl);
     return true;
 }
 
@@ -111,7 +111,7 @@ bool ESP32VideoStream::start()
     }
 
     // 连接WebSocket
-    LOG_INFO("开始连接WebSocket: {}", currentStreamUrl);
+    LOG_INFO("检测到无线面捕断开，尝试重连: {}", currentStreamUrl);
     webSocket->open(QUrl(QString::fromStdString(currentStreamUrl)));
 
     if (!heartbeatTimer->isActive())
@@ -123,7 +123,7 @@ bool ESP32VideoStream::start()
 
 void ESP32VideoStream::stop()
 {
-    LOG_INFO("停止WebSocket视频流");
+    LOG_DEBUG("停止WebSocket视频流");
     isRunning = false;
 
     // 关闭WebSocket
@@ -154,7 +154,7 @@ cv::Mat ESP32VideoStream::getLatestFrame() const
 
 void ESP32VideoStream::onConnected()
 {
-    LOG_INFO("WebSocket连接成功: {}", currentStreamUrl);
+    LOG_INFO("无线面捕连接成功: {}", currentStreamUrl);
     isRunning = true;
 }
 
