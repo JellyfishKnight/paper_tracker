@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>347</width>
-    <height>417</height>
+    <height>448</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,27 +42,49 @@
   <widget class="QLabel" name="LOGOLabel">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>301</width>
-     <height>121</height>
+     <x>0</x>
+     <y>10</y>
+     <width>341</width>
+     <height>131</height>
     </rect>
    </property>
    <property name="text">
     <string/>
    </property>
   </widget>
-  <widget class="QPushButton" name="EyeTrackerButton_2">
+  <widget class="QPushButton" name="ClientUpdateButton">
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>350</y>
+     <y>340</y>
      <width>101</width>
      <height>51</height>
     </rect>
    </property>
    <property name="text">
     <string>客户端更新检查</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="ClientStatusLabel">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>410</y>
+     <width>201</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>无法连接到服务器，请检查网络</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignCenter</set>
    </property>
   </widget>
  </widget>

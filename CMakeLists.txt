@@ -151,12 +151,13 @@ target_link_libraries(
 ############### ui ################
 add_library(
     ui
-        ui/roi_event.cpp
-        ui/paper_face_tracker_window.ui
-        ui/paper_face_tracker_window.cpp
-        ui/paper_tracker_main_window.cpp
-        ui/include/paper_tracker_main_window.hpp
-        ui/paper_tracker_main_window.ui
+    ui/roi_event.cpp
+    ui/paper_face_tracker_window.cpp
+    ui/paper_face_tracker_window.ui
+    ui/paper_tracker_main_window.cpp
+    ui/paper_tracker_main_window.ui
+    ui/paper_eye_tracker_window.cpp
+    ui/paper_eye_tracker_window.ui
 )
 
 target_include_directories(

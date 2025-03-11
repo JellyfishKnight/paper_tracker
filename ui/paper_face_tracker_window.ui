@@ -920,28 +920,6 @@
     <string>标定页面</string>
    </property>
   </widget>
-  <widget class="QLabel" name="ClientStatusLabel">
-   <property name="geometry">
-    <rect>
-     <x>570</x>
-     <y>10</y>
-     <width>231</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <italic>true</italic>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>无法连接到服务器，请检查网络</string>
-   </property>
-   <property name="textInteractionFlags">
-    <set>Qt::TextInteractionFlag::NoTextInteraction</set>
-   </property>
-  </widget>
   <widget class="QLabel" name="WifiConnectLabel">
    <property name="geometry">
     <rect>

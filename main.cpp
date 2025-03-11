@@ -5,6 +5,7 @@
 #include <QProgressDialog>
 #include <curl/curl.h>
 #include <inference.hpp>
+#include <paper_tracker_main_window.hpp>
 #include <QApplication>
 #include <QThread>
 #include <updater.hpp>
@@ -27,14 +28,10 @@ int main(int argc, char *argv[]) {
         box.exec();
     }
 
-
-    PaperTrackFaceMainWindow window();
+    PaperTrackerMainWindow window;
     window.setWindowIcon(icon);  // 设置窗口图标
     window.show();
 
     int status = QApplication::exec();
-
-    window.stop();
-
     return status;
 }

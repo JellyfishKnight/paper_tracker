@@ -66,13 +66,13 @@ struct PaperFaceTrackerConfig
     REFLECT(brightness, rotate_angle, energy_mode, wifi_ip, use_filter, amp_map, rect);
 };
 
-class PaperFaceTrackMainWindow : public QWidget {
+class PaperFaceTrackerWindow final : public QWidget {
 private:
     // UI组件
     Ui::PaperFaceTrackerMainWindow ui{};
 public:
-    explicit PaperFaceTrackMainWindow(QWidget *parent = nullptr);
-    ~PaperFaceTrackMainWindow() override;
+    explicit PaperFaceTrackerWindow(QWidget *parent = nullptr);
+    ~PaperFaceTrackerWindow() override;
 
     void setSerialStatusLabel(const QString& text) const;
     void setWifiStatusLabel(const QString& text) const;
@@ -144,7 +144,6 @@ private slots:
     void onTongueDownChanged(int value) const;
 
     void onCheckFirmwareVersionClicked();
-    void onCheckClientVersionClicked();
 private:
     void start_image_download() const;
 
