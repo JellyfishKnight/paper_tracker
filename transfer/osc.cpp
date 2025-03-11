@@ -43,7 +43,7 @@
 
 OscManager::OscManager()
     : address_("127.0.0.1"),
-      port_(9000),
+      port_(8888),
       location_prefix_(""),
       multiplier_(1.0f),
       socket_(nullptr)
