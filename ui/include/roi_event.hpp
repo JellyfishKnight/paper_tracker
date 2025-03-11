@@ -10,7 +10,6 @@
 
 
 class ROIEventFilter final : public QObject {
-    // Q_OBJECT
 public:
     explicit ROIEventFilter(std::function<void(QRect rect, bool is_end)> func, QObject *parent = nullptr);
 protected:

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PaperTrackerMainWindow</class>
+ <widget class="QWidget" name="PaperTrackerMainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>585</width>
+    <height>459</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>PaperTrackerMainWindow</string>
+  </property>
+  <widget class="QPushButton" name="FaceTrackerButton">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>220</y>
+     <width>201</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>面捕界面</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="EyeTrackerButton">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>220</y>
+     <width>201</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>眼追界面</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="LOGOLabel">
+   <property name="geometry">
+    <rect>
+     <x>-10</x>
+     <y>0</y>
+     <width>601</width>
+     <height>181</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ClientUpdateButton">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>330</y>
+     <width>101</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>客户端更新检查</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="ClientStatusLabel">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>410</y>
+     <width>201</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>无法连接到服务器，请检查网络</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignCenter</set>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

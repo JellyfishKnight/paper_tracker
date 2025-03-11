@@ -8,9 +8,6 @@
 
 void init_logger(QPlainTextEdit* log_window)
 {
-    if (Logger::pthis == nullptr)
-    {
-        Logger::pthis = new Logger(log_window);
-    }
+    Logger::pthis = new Logger(log_window);
 }
 

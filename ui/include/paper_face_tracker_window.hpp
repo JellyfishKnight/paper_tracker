@@ -1,17 +1,21 @@
 //
-// Created by JellyfishKnight on 2025/2/25.
+// Created by JellyfishKnight on 25-3-11.
 //
 
-#pragma once
+#ifndef PAPER_FACE_TRACKER_WINDOW_HPP
+#define PAPER_FACE_TRACKER_WINDOW_HPP
+
 #include <QProcess>
 #include <thread>
 #include <future>
 #include <atomic>
 #include <algorithm>
+#include <config_writer.hpp>
 #include <image_downloader.hpp>
+#include <osc.hpp>
 #include <QTimer>
 
-#include "ui_main_window.h"
+#include "ui_paper_face_tracker_window.h"
 #include "inference.hpp"
 #include "serial.hpp"
 #include "logger.hpp"
@@ -49,7 +53,7 @@ struct Rect
     REFLECT(x, y, width, height);
 };
 
-struct PaperTrackerConfig
+struct PaperFaceTrackerConfig
 {
     int brightness;
     int rotate_angle;
@@ -62,13 +66,13 @@ struct PaperTrackerConfig
     REFLECT(brightness, rotate_angle, energy_mode, wifi_ip, use_filter, amp_map, rect);
 };
 
-class PaperTrackMainWindow : public QWidget {
+class PaperFaceTrackerWindow final : public QWidget {
 private:
     // UI组件
-    Ui::PaperTrackerMainWindow ui{};
+    Ui::PaperFaceTrackerMainWindow ui{};
 public:
-    explicit PaperTrackMainWindow(const PaperTrackerConfig& config = {}, QWidget *parent = nullptr);
-    ~PaperTrackMainWindow() override;
+    explicit PaperFaceTrackerWindow(QWidget *parent = nullptr);
+    ~PaperFaceTrackerWindow() override;
 
     void setSerialStatusLabel(const QString& text) const;
     void setWifiStatusLabel(const QString& text) const;
@@ -93,9 +97,6 @@ public:
     void setOnUseFilterClickedFunc(FuncWithVal func);
     void setOnSaveConfigButtonClickedFunc(FuncWithoutArgs func);
     void setOnAmpMapChangedFunc(FuncWithoutArgs func);
-
-    void setBeforeStop(FuncWithoutArgs func);
-
     void set_update_thread(FuncWithoutArgs func);
     void set_inference_thread(FuncWithoutArgs func);
     void set_osc_send_thead(FuncWithoutArgs func);
@@ -105,9 +106,9 @@ public:
     void stop();
     int get_max_fps() const;
 
-    PaperTrackerConfig generate_config() const;
+    PaperFaceTrackerConfig generate_config() const;
 
-    void set_config(const PaperTrackerConfig& config);
+    void set_config(const PaperFaceTrackerConfig& config);
 
     std::unordered_map<std::string, int> getAmpMap() const;
 
@@ -127,30 +128,26 @@ private slots:
     void onUseFilterClicked(int value) const;
     void onFlashButtonClicked();
     void onEnergyModeChanged(int value);
-    void onSaveConfigButtonClicked() const;
+    void onSaveConfigButtonClicked();
 
     void onCheeckPuffLeftChanged(int value) const;
-    void onCheeckPuffRightChanged(int value);
+    void onCheeckPuffRightChanged(int value) const;
     void onJawOpenChanged(int value);
     void onJawLeftChanged(int value);
     void onJawRightChanged(int value);
-    void onMouthLeftChanged(int value);
+    void onMouthLeftChanged(int value) const;
     void onMouthRightChanged(int value);
     void onTongueOutChanged(int value);
     void onTongueLeftChanged(int value);
     void onTongueRightChanged(int value);
     void onTongueUpChanged(int value);
-    void onTongueDownChanged(int value);
+    void onTongueDownChanged(int value) const;
 
     void onCheckFirmwareVersionClicked();
-    void onCheckClientVersionClicked();
 private:
     void start_image_download() const;
 
     QProcess* vrcftProcess;
-
-    FuncWithoutArgs beforeStopFunc;
-
     FuncWithVal onRotateAngleChangedFunc;
     FuncWithVal onUseFilterClickedFunc;
     FuncWithoutArgs onSaveConfigButtonClickedFunc;
@@ -165,6 +162,8 @@ private:
 
     void connect_callbacks();
 
+    void create_sub_threads();
+
     Rect roi_rect;
 
     std::thread update_thread;
@@ -176,10 +175,15 @@ private:
     std::shared_ptr<SerialPortManager> serial_port_manager;
     std::shared_ptr<ESP32VideoStream> image_downloader;
     std::shared_ptr<Updater> updater;
+    std::shared_ptr<Inference> inference;
+    std::shared_ptr<OscManager> osc_manager;
+    std::shared_ptr<ConfigWriter> config_writer;
 
-    PaperTrackerConfig config;
+    PaperFaceTrackerConfig config;
 
     std::string firmware_version;
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 };
+
+#endif //PAPER_FACE_TRACKER_WINDOW_HPP

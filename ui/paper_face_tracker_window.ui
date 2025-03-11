@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PaperTrackerMainWindow</class>
- <widget class="QWidget" name="PaperTrackerMainWindow">
+ <class>PaperFaceTrackerMainWindow</class>
+ <widget class="QWidget" name="PaperFaceTrackerMainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -223,10 +223,10 @@
     <widget class="QCheckBox" name="UseFilterBox">
      <property name="geometry">
       <rect>
-       <x>500</x>
+       <x>480</x>
        <y>170</y>
        <width>141</width>
-       <height>21</height>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
@@ -864,65 +864,17 @@
       <string>x1</string>
      </property>
     </widget>
-   </widget>
-   <widget class="QWidget" name="page_3">
-    <widget class="QPushButton" name="CheckClientVersionButton">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>10</y>
-       <width>101</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>检查客户端更新</string>
-     </property>
-    </widget>
     <widget class="QPushButton" name="CheckFirmwareVersionButton">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>60</y>
-       <width>101</width>
+       <x>510</x>
+       <y>80</y>
+       <width>131</width>
        <height>41</height>
       </rect>
      </property>
      <property name="text">
       <string>检查固件更新</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="LanguageBox">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>50</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text">
-       <string>中文（简体）</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>English</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QLabel" name="label_20">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>20</y>
-       <width>181</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>语言/Language（开发中）</string>
      </property>
     </widget>
    </widget>
@@ -951,28 +903,6 @@
    </property>
    <property name="text">
     <string>标定页面</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="ClientStatusLabel">
-   <property name="geometry">
-    <rect>
-     <x>570</x>
-     <y>10</y>
-     <width>231</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <italic>true</italic>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>无法连接到服务器，请检查网络</string>
-   </property>
-   <property name="textInteractionFlags">
-    <set>Qt::TextInteractionFlag::NoTextInteraction</set>
    </property>
   </widget>
   <widget class="QLabel" name="WifiConnectLabel">
@@ -1026,19 +956,6 @@
    </property>
    <property name="textInteractionFlags">
     <set>Qt::TextInteractionFlag::NoTextInteraction</set>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="SettingPageButton">
-   <property name="geometry">
-    <rect>
-     <x>210</x>
-     <y>10</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>设置</string>
    </property>
   </widget>
  </widget>

@@ -78,6 +78,8 @@ private:
     std::shared_ptr<Ort::Session> session_;
     Ort::SessionOptions session_options;
 
+    std::shared_ptr<Ort::IoBinding> io_binding_;
+
     // 输入输出名称
     std::vector<std::string> input_names_;
     std::vector<std::string> output_names_;
