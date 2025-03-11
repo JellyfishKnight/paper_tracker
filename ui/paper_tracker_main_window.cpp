@@ -17,6 +17,8 @@
 PaperTrackerMainWindow::PaperTrackerMainWindow(QWidget *parent) :
     QWidget(parent) {
     ui.setupUi(this);
+    ui.FaceTrackerInstructionLabel->setText("<a href='https://fcnk6r4c64fa.feishu.cn/wiki/LZdrwWWozi7zffkLt5pc81WanAd'>点击查看面捕说明书</a>");
+    ui.EyeTrackerInstructionLabel->setText("<a href='https://fcnk6r4c64fa.feishu.cn/wiki/Dg4qwI3mDiJ3fHk5iZtc2z6Rn47'>点击查看眼追说明书</a>");
     setFixedSize(585, 459);
     // set logo
     QFile Logo = QFile("./resources/logo.png");
