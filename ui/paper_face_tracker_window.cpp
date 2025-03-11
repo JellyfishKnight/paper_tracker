@@ -121,7 +121,7 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
     });
     inference = std::make_shared<Inference>();
     osc_manager = std::make_shared<OscManager>();
-    config_writer = std::make_shared<ConfigWriter>("./face_tracker_config.json");
+    config_writer = std::make_shared<ConfigWriter>("./config.json");
     set_config(config_writer->get_config<PaperFaceTrackerConfig>());
     // Load model
     LOG_INFO("正在加载推理模型...");
