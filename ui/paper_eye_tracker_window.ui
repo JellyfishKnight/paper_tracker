@@ -6,36 +6,96 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>671</width>
-    <height>442</height>
+    <width>883</width>
+    <height>596</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>PaperEyeTrackerWindow</string>
   </property>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="LeftEyeImage">
    <property name="geometry">
     <rect>
-     <x>120</x>
-     <y>110</y>
-     <width>421</width>
-     <height>206</height>
+     <x>10</x>
+     <y>40</y>
+     <width>261</width>
+     <height>261</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <family>Microsoft JhengHei</family>
-     <pointsize>28</pointsize>
-     <italic>true</italic>
-     <bold>true</bold>
-    </font>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="RightEyeImage">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>40</y>
+     <width>261</width>
+     <height>261</height>
+    </rect>
    </property>
    <property name="text">
-    <string>PaperEyeTracker
-功能开发中，敬请期待！</string>
+    <string/>
    </property>
-   <property name="alignment">
-    <set>Qt::AlignmentFlag::AlignCenter</set>
+  </widget>
+  <widget class="QPlainTextEdit" name="SSIDInput">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>330</y>
+     <width>171</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPlainTextEdit" name="PassWordInput">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>380</y>
+     <width>171</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="SendButton">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>330</y>
+     <width>101</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>发送</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="RestartButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>330</y>
+     <width>111</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>重启</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="FlashButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>380</y>
+     <width>111</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>刷写固件</string>
    </property>
   </widget>
  </widget>
