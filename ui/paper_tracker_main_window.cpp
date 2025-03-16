@@ -36,6 +36,11 @@ PaperTrackerMainWindow::PaperTrackerMainWindow(QWidget *parent) :
     updater = std::make_shared<Updater>();
     connect_callbacks();
 
+    // 读取配置文件
+    config_writer = std::make_shared<ConfigWriter>("./config.json");
+    config = config_writer->get_config<PaperTrackerConfig>();
+
+    // 检查客户端版本
     QTimer::singleShot(1000, this, [this] ()
     {
         auto remote_opt = updater->getClientVersionSync(nullptr);
@@ -67,22 +72,34 @@ PaperTrackerMainWindow::PaperTrackerMainWindow(QWidget *parent) :
 
 PaperTrackerMainWindow::~PaperTrackerMainWindow() = default;
 
-void PaperTrackerMainWindow::onFaceTrackerButtonClicked() const
+void PaperTrackerMainWindow::onFaceTrackerButtonClicked()
 {
-    auto window = new PaperFaceTrackerWindow();
-    window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
-    window->setWindowModality(Qt::NonModal);     // 设置为非模态
-    window->setWindowIcon(this->windowIcon());
-    window->show();
+    try
+    {
+        auto window = new PaperFaceTrackerWindow(&config.face_tracker_config, this);
+        window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
+        window->setWindowModality(Qt::NonModal);     // 设置为非模态
+        window->setWindowIcon(this->windowIcon());
+        window->show();
+    } catch (std::exception& e)
+    {
+        QMessageBox::critical(this, tr("错误"), e.what());
+    }
 }
 
-void PaperTrackerMainWindow::onEyeTrackerButtonClicked() const
+void PaperTrackerMainWindow::onEyeTrackerButtonClicked()
 {
-    auto window = new PaperEyeTrackerWindow();
-    window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
-    window->setWindowModality(Qt::NonModal);     // 设置为非模态
-    window->setWindowIcon(this->windowIcon());
-    window->show();
+    try
+    {
+        auto window = new PaperEyeTrackerWindow(&config.eye_tracker_config, this);
+        window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
+        window->setWindowModality(Qt::WindowModal);     // 设置为非模态
+        window->setWindowIcon(this->windowIcon());
+        window->show();
+    } catch (std::exception& e)
+    {
+        QMessageBox::critical(this, tr("错误"), e.what());
+    }
 }
 
 void PaperTrackerMainWindow::onUpdateButtonClicked()

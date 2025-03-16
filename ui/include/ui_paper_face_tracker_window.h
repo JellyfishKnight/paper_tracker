@@ -86,7 +86,6 @@ public:
     QScrollBar *TongueUpBar;
     QScrollBar *TongueRightBar;
     QScrollBar *TongueLeftBar;
-    QPushButton *SaveParamConfigButton;
     QLabel *ImageLabelCal;
     QLabel *label_3;
     QLabel *label_4;
@@ -332,9 +331,6 @@ public:
         TongueLeftBar->setGeometry(QRect(120, 410, 201, 16));
         TongueLeftBar->setOrientation(Qt::Orientation::Horizontal);
         scrollArea->setWidget(scrollAreaWidgetContents);
-        SaveParamConfigButton = new QPushButton(page_2);
-        SaveParamConfigButton->setObjectName("SaveParamConfigButton");
-        SaveParamConfigButton->setGeometry(QRect(510, 30, 131, 41));
         ImageLabelCal = new QLabel(page_2);
         ImageLabelCal->setObjectName("ImageLabelCal");
         ImageLabelCal->setGeometry(QRect(510, 190, 280, 280));
@@ -415,7 +411,6 @@ public:
         label_8->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\344\270\213\345\267\264\345\267\246\347\247\273", nullptr));
         label_12->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\350\210\214\345\244\264\344\274\270\345\207\272", nullptr));
         label_31->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\350\210\214\345\244\264\345\220\221\345\217\263", nullptr));
-        SaveParamConfigButton->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\344\277\235\345\255\230\345\217\202\346\225\260", nullptr));
         ImageLabelCal->setText(QString());
         label_3->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\346\224\276\345\244\247\345\200\215\347\216\207", nullptr));
         label_4->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "x3", nullptr));

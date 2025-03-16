@@ -8,7 +8,7 @@
 #include "ui_paper_eye_tracker_window.h"
 
 
-PaperEyeTrackerWindow::PaperEyeTrackerWindow(QWidget *parent) :
+PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWidget *parent) :
     QWidget(parent) {
     if (instance == nullptr)
         instance = this;

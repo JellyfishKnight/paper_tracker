@@ -71,7 +71,7 @@ private:
     // UI组件
     Ui::PaperFaceTrackerMainWindow ui{};
 public:
-    explicit PaperFaceTrackerWindow(QWidget *parent = nullptr);
+    explicit PaperFaceTrackerWindow( PaperFaceTrackerConfig* config, QWidget *parent = nullptr);
     ~PaperFaceTrackerWindow() override;
 
     void setSerialStatusLabel(const QString& text) const;
@@ -108,7 +108,7 @@ public:
 
     PaperFaceTrackerConfig generate_config() const;
 
-    void set_config(const PaperFaceTrackerConfig& config);
+    void set_config();
 
     std::unordered_map<std::string, int> getAmpMap() const;
 
@@ -128,12 +128,11 @@ private slots:
     void onUseFilterClicked(int value) const;
     void onFlashButtonClicked();
     void onEnergyModeChanged(int value);
-    void onSaveConfigButtonClicked();
 
     void onCheeckPuffLeftChanged(int value) const;
     void onCheeckPuffRightChanged(int value) const;
-    void onJawOpenChanged(int value);
-    void onJawLeftChanged(int value);
+    void onJawOpenChanged(int value) const;
+    void onJawLeftChanged(int value) const;
     void onJawRightChanged(int value);
     void onMouthLeftChanged(int value) const;
     void onMouthRightChanged(int value);
@@ -142,8 +141,6 @@ private slots:
     void onTongueRightChanged(int value);
     void onTongueUpChanged(int value);
     void onTongueDownChanged(int value) const;
-
-    void onCheckFirmwareVersionClicked();
 private:
     void start_image_download() const;
 
@@ -177,11 +174,12 @@ private:
     std::shared_ptr<Updater> updater;
     std::shared_ptr<Inference> inference;
     std::shared_ptr<OscManager> osc_manager;
-    std::shared_ptr<ConfigWriter> config_writer;
 
-    PaperFaceTrackerConfig config;
+    PaperFaceTrackerConfig* config;
 
     std::string firmware_version;
+
+    inline static PaperFaceTrackerWindow* instance = nullptr;
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 };

@@ -13,9 +13,15 @@
 #include <QTimer>
 #include "config_writer.hpp"
 
+struct PaperEyeTrackerConfig
+{
+
+    REFLECT();
+};
+
 class PaperEyeTrackerWindow : public QWidget {
 public:
-    explicit PaperEyeTrackerWindow(QWidget *parent = nullptr);
+    explicit PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWidget *parent = nullptr);
     ~PaperEyeTrackerWindow() override;
 
 private:
