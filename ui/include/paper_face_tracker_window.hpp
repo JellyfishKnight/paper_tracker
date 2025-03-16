@@ -167,7 +167,6 @@ private:
 
     std::shared_ptr<SerialPortManager> serial_port_manager;
     std::shared_ptr<ESP32VideoStream> image_downloader;
-    std::shared_ptr<Updater> updater;
     std::shared_ptr<Inference> inference;
     std::shared_ptr<OscManager> osc_manager;
 

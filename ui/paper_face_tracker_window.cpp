@@ -147,7 +147,6 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(PaperFaceTrackerConfig* config, Q
     // 初始化串口和wifi
     serial_port_manager = std::make_shared<SerialPortManager>();
     image_downloader = std::make_shared<ESP32VideoStream>();
-    updater = std::make_shared<Updater>();
     LOG_INFO("初始化有线模式");
     serial_port_manager->init();
     // init serial port manager
