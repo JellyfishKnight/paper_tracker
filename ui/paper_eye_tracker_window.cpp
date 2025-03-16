@@ -10,8 +10,14 @@
 
 PaperEyeTrackerWindow::PaperEyeTrackerWindow(QWidget *parent) :
     QWidget(parent) {
+    if (instance == nullptr)
+        instance = this;
+    else
+        throw std::exception("当前已经打开了眼追窗口，请不要重复打开");
     ui.setupUi(this);
     setFixedSize(671, 442);
 }
 
-PaperEyeTrackerWindow::~PaperEyeTrackerWindow() = default;
+PaperEyeTrackerWindow::~PaperEyeTrackerWindow() {
+    instance = nullptr;
+}

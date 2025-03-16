@@ -7,7 +7,6 @@
 
 #include <QWidget>
 #include <updater.hpp>
-#include <QObject>
 
 #include "ui_paper_tracker_main_window.h"
 
@@ -17,8 +16,8 @@ public:
 
     ~PaperTrackerMainWindow() override;
 private slots:
-    void onFaceTrackerButtonClicked();
-    void onEyeTrackerButtonClicked();
+    void onFaceTrackerButtonClicked() const;
+    void onEyeTrackerButtonClicked() const;
     void onUpdateButtonClicked();
 
 private:

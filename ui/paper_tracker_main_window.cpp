@@ -67,7 +67,7 @@ PaperTrackerMainWindow::PaperTrackerMainWindow(QWidget *parent) :
 
 PaperTrackerMainWindow::~PaperTrackerMainWindow() = default;
 
-void PaperTrackerMainWindow::onFaceTrackerButtonClicked()
+void PaperTrackerMainWindow::onFaceTrackerButtonClicked() const
 {
     auto window = new PaperFaceTrackerWindow();
     window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
@@ -76,7 +76,7 @@ void PaperTrackerMainWindow::onFaceTrackerButtonClicked()
     window->show();
 }
 
-void PaperTrackerMainWindow::onEyeTrackerButtonClicked()
+void PaperTrackerMainWindow::onEyeTrackerButtonClicked() const
 {
     auto window = new PaperEyeTrackerWindow();
     window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
