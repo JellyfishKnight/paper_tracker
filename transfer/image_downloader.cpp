@@ -241,6 +241,9 @@ void ESP32VideoStream::onBinaryMessageReceived(const QByteArray &message)
         cv::Mat rawFrame = cv::imdecode(buffer, cv::IMREAD_COLOR);
 
         if (!rawFrame.empty()) {
+            if (http_server) {
+                http_server->updateFrame(rawFrame);
+            }
             // LOG_DEBUG("成功解码图像，尺寸: " + std::to_string(rawFrame.cols) + "x" + std::to_string(rawFrame.rows));
 
             QMutexLocker locker(&mutex);
@@ -280,6 +283,7 @@ void ESP32VideoStream::onBinaryMessageReceived(const QByteArray &message)
                 }
             }
         }
+
     } catch (const std::exception& e) {
         LOG_ERROR("处理WebSocket消息时出错: {}", e.what());
     }

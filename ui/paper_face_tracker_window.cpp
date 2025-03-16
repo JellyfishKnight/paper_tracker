@@ -145,13 +145,22 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
     serial_port_manager = std::make_shared<SerialPortManager>();
     image_downloader = std::make_shared<ESP32VideoStream>();
     updater = std::make_shared<Updater>();
+    http_server = std::make_shared<HttpServer>();
+    if (http_server->start(80)) {
+        LOG_INFO("HTTP服务器已启动，监听端口: 80");
+    } else {
+        LOG_ERROR("HTTP服务器启动失败");
+    }
+    image_downloader->setHttpServer(http_server);
     LOG_INFO("初始化有线模式");
+
     serial_port_manager->init();
     // init serial port manager
     serial_port_manager->setDeviceStatusCallback([this]
                                                         (const std::string& ip, int brightness, int power, int version) {
         // 使用Qt的线程安全方式更新UI
         QMetaObject::invokeMethod(this, [ip, brightness, power, version, this]() {
+
             // 只在 IP 地址变化时更新显示
             if (current_ip_ != "http://" + ip)
             {
@@ -237,6 +246,9 @@ PaperFaceTrackerWindow::~PaperFaceTrackerWindow() {
     } else
     {
         LOG_ERROR("配置文件保存失败");
+    }
+    if (http_server) {
+        http_server->stop();
     }
 }
 

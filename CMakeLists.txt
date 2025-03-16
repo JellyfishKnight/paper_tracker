@@ -124,6 +124,8 @@ add_library(
     transfer/video_reader.cpp
     transfer/osc.cpp
     transfer/image_downloader.cpp
+    transfer/include/http_server.hpp
+    transfer/http_server.cpp
 )
 
 target_include_directories(
