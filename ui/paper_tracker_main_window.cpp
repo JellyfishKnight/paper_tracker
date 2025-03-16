@@ -76,10 +76,11 @@ void PaperTrackerMainWindow::onFaceTrackerButtonClicked()
 {
     try
     {
-        auto window = new PaperFaceTrackerWindow(&config.face_tracker_config, this);
+        auto window = new PaperFaceTrackerWindow(&config.face_tracker_config);
         window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
         window->setWindowModality(Qt::NonModal);     // 设置为非模态
         window->setWindowIcon(this->windowIcon());
+        window->setParent(this, Qt::Window);
         window->show();
     } catch (std::exception& e)
     {
@@ -91,10 +92,11 @@ void PaperTrackerMainWindow::onEyeTrackerButtonClicked()
 {
     try
     {
-        auto window = new PaperEyeTrackerWindow(&config.eye_tracker_config, this);
+        auto window = new PaperEyeTrackerWindow(&config.eye_tracker_config);
         window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
-        window->setWindowModality(Qt::WindowModal);     // 设置为非模态
+        window->setWindowModality(Qt::NonModal);     // 设置为非模态
         window->setWindowIcon(this->windowIcon());
+        window->setParent(this, Qt::Window);
         window->show();
     } catch (std::exception& e)
     {

@@ -366,8 +366,8 @@ void PaperFaceTrackerWindow::connect_callbacks()
     connect(ui.TongueRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onTongueRightChanged);
     connect(ui.TongueUpBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onTongueUpChanged);
     connect(ui.TongueDownBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onTongueDownChanged);
-    connect(ui.CheekPuffLeftBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onCheeckPuffLeftChanged);
-    connect(ui.CheekPuffRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onCheeckPuffRightChanged);
+    connect(ui.CheekPuffLeftBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onCheekPuffLeftChanged);
+    connect(ui.CheekPuffRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onCheekPuffRightChanged);
 }
 
 float PaperFaceTrackerWindow::getRotateAngle() const
@@ -620,12 +620,12 @@ void PaperFaceTrackerWindow::set_config()
     roi_rect = config->rect;
 }
 
-void PaperFaceTrackerWindow::onCheeckPuffLeftChanged(int value) const
+void PaperFaceTrackerWindow::onCheekPuffLeftChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }
 
-void PaperFaceTrackerWindow::onCheeckPuffRightChanged(int value) const
+void PaperFaceTrackerWindow::onCheekPuffRightChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }
@@ -640,7 +640,7 @@ void PaperFaceTrackerWindow::onJawLeftChanged(int value) const
     inference->set_amp_map(getAmpMap());
 }
 
-void PaperFaceTrackerWindow::onJawRightChanged(int value)
+void PaperFaceTrackerWindow::onJawRightChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }

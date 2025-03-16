@@ -95,10 +95,6 @@ public:
     using FuncWithVal = std::function<void(int)>;
     // let user decide what to do with these action
     void setOnUseFilterClickedFunc(FuncWithVal func);
-    void setOnSaveConfigButtonClickedFunc(FuncWithoutArgs func);
-    void setOnAmpMapChangedFunc(FuncWithoutArgs func);
-    void set_update_thread(FuncWithoutArgs func);
-    void set_inference_thread(FuncWithoutArgs func);
     void set_osc_send_thead(FuncWithoutArgs func);
 
     bool is_running() const;
@@ -129,11 +125,11 @@ private slots:
     void onFlashButtonClicked();
     void onEnergyModeChanged(int value);
 
-    void onCheeckPuffLeftChanged(int value) const;
-    void onCheeckPuffRightChanged(int value) const;
+    void onCheekPuffLeftChanged(int value) const;
+    void onCheekPuffRightChanged(int value) const;
     void onJawOpenChanged(int value) const;
     void onJawLeftChanged(int value) const;
-    void onJawRightChanged(int value);
+    void onJawRightChanged(int value) const;
     void onMouthLeftChanged(int value) const;
     void onMouthRightChanged(int value);
     void onTongueOutChanged(int value);
