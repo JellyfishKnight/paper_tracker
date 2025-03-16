@@ -146,7 +146,7 @@ private:
     FuncWithoutArgs onSaveConfigButtonClickedFunc;
     FuncWithoutArgs onAmpMapChangedFunc;
     std::shared_ptr<QTimer> brightness_timer;
-
+    std::shared_ptr<HttpServer> http_server;
     int current_brightness;
     int current_rotate_angle = 0;
 
