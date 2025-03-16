@@ -27,6 +27,8 @@ public:
 private:
     Ui::PaperEyeTrackerWindow ui{};
 
+
+
     inline static PaperEyeTrackerWindow* instance = nullptr;
 };
 

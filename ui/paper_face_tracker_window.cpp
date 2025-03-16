@@ -151,23 +151,39 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(PaperFaceTrackerConfig* config, Q
     LOG_INFO("初始化有线模式");
     serial_port_manager->init();
     // init serial port manager
-    serial_port_manager->setDeviceStatusCallback([this]
-                                                        (const std::string& ip, int brightness, int power, int version) {
-        // 使用Qt的线程安全方式更新UI
-        QMetaObject::invokeMethod(this, [ip, brightness, power, version, this]() {
-            // 只在 IP 地址变化时更新显示
-            if (current_ip_ != "http://" + ip)
+    serial_port_manager->registerCallback(
+        PACKET_DEVICE_STATUS,
+        [this](const std::string& ip, int brightness, int power, int version) {
+            if (version != 1)
             {
-                current_ip_ = "http://" + ip;
-                // 更新IP地址显示，添加 http:// 前缀
-                this->setIPText(QString::fromStdString(current_ip_));
-                LOG_INFO("IP地址已更新: {}", current_ip_);
-                start_image_download();
+                static bool version_warning = false;
+                QString version_str = version == 2 ? "左眼追" : "右眼追";
+                if (!version_warning)
+                {
+                    QMessageBox msgBox;
+                    msgBox.setWindowIcon(this->windowIcon());
+                    msgBox.setText(tr("检测到") + version_str + tr("设备，请打开眼追界面进行设置"));
+                    msgBox.exec();
+                    version_warning = true;
+                }
+                return ;
             }
-            firmware_version = std::to_string(version);
-            // 可以添加其他状态更新的日志，如果需要的话
-        }, Qt::QueuedConnection);
-    });
+            // 使用Qt的线程安全方式更新UI
+            QMetaObject::invokeMethod(this, [ip, brightness, power, version, this]() {
+                // 只在 IP 地址变化时更新显示
+                if (current_ip_ != "http://" + ip)
+                {
+                    current_ip_ = "http://" + ip;
+                    // 更新IP地址显示，添加 http:// 前缀
+                    this->setIPText(QString::fromStdString(current_ip_));
+                    LOG_INFO("IP地址已更新: {}", current_ip_);
+                    start_image_download();
+                }
+                firmware_version = std::to_string(version);
+                // 可以添加其他状态更新的日志，如果需要的话
+            }, Qt::QueuedConnection);
+        }
+    );
 
     LOG_DEBUG("等待有线模式面捕连接");
     while (serial_port_manager->status() == SerialStatus::CLOSED) {}

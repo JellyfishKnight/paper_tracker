@@ -1,9 +1,6 @@
 //
 // Created by JellyfishKnight on 25-3-11.
 //
-
-// You may need to build the project (run Qt uic code generator) to get "ui_paper_eye_tracker_window.h" resolved
-
 #include "paper_eye_tracker_window.hpp"
 #include "ui_paper_eye_tracker_window.h"
 
@@ -15,7 +12,7 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWid
     else
         throw std::exception("当前已经打开了眼追窗口，请不要重复打开");
     ui.setupUi(this);
-    setFixedSize(671, 442);
+    setFixedSize(883, 596);
 }
 
 PaperEyeTrackerWindow::~PaperEyeTrackerWindow() {

@@ -229,7 +229,7 @@ void SerialPortManager::stop()
 }
 
 // 处理接收到的数据
-void SerialPortManager::processReceivedData(std::string& receivedData) const
+void SerialPortManager::processReceivedData(std::string& receivedData)
 {
     // 处理粘包问题 - 循环处理所有可能的完整数据包
     while (true) {
@@ -325,7 +325,7 @@ static std::string trim(const std::string& str) {
     return str.substr(start, end - start + 1);
 }
 
-PacketType SerialPortManager::parsePacket(const std::string& packet) const
+PacketType SerialPortManager::parsePacket(const std::string& packet)
 {
     // 先将收到的字符串去除首尾空白（例如换行符、空格）
     std::string trimmedPacket = trim(packet);
@@ -348,6 +348,7 @@ PacketType SerialPortManager::parsePacket(const std::string& packet) const
         case '1': // 数据包1：A101B1
             if (std::regex_match(trimmedPacket, std::regex("^A1(01)B1$"))) {
                 LOG_DEBUG("匹配到包类型1 (WiFi 配置提示)");
+                handlePacket(PACKET_WIFI_SETUP, {});
                 return PACKET_WIFI_SETUP;
             }
             break;
@@ -355,6 +356,7 @@ PacketType SerialPortManager::parsePacket(const std::string& packet) const
         case '2': // 数据包2：A2SSID[SSID内容]PWD[PWD]B2
             if (std::regex_match(trimmedPacket, match, std::regex("^A2SSID(.*?)PWD(.*?)B2$"))) {
                 LOG_DEBUG("匹配到包类型2 (WiFi 配置数据): SSID = {}, PWD = {}", match[1].str(), match[2].str());
+                handlePacket(PACKET_WIFI_SETUP, {match[1].str(), match[2].str()});
                 return PACKET_WIFI_SSID_PWD;
             }
             break;
@@ -362,6 +364,7 @@ PacketType SerialPortManager::parsePacket(const std::string& packet) const
         case '3': // 数据包3：A303B3
             if (std::regex_match(trimmedPacket, std::regex("^A303B3$"))) {
                 LOG_DEBUG("匹配到包类型3 (WiFi 配置成功确认)");
+                handlePacket(PACKET_WIFI_CONFIRM, {});
                 return PACKET_WIFI_CONFIRM;
             }
             break;
@@ -376,48 +379,46 @@ PacketType SerialPortManager::parsePacket(const std::string& packet) const
                 {
                     LOG_INFO("(WiFi 配置错误): 当前WIFI为 {}, 密码为 {}, 请检查是否有误", match[1].str(), match[2].str());
                 }
-
+                handlePacket(PACKET_WIFI_CONFIRM, {match[1].str(), match[2].str()});
                 return PACKET_WIFI_ERROR;
             }
             break;
 
-    case '5': // 数据包5：A5[亮度][IP地址]POWER[电量]VERSION[固件版本]B5
-        if (std::regex_match(trimmedPacket, match,
-            std::regex(R"(^A5(\d{1,3})(\d+)POWER(\d{1,3})VERSION(\d{1,3})B5$)"))) {
-            // 获取数字形式的IP地址
-            std::string rawIp = match[2];
+        case '5': // 数据包5：A5[亮度][IP地址]POWER[电量]VERSION[固件版本]B5
+            if (std::regex_match(trimmedPacket, match,
+                std::regex(R"(^A5(\d{1,3})(\d+)POWER(\d{1,3})VERSION(\d{1,3})B5$)"))) {
+                // 获取数字形式的IP地址
+                std::string rawIp = match[2];
 
-            // 格式化为标准IPv4地址 (169031168192 -> 169.031.168.192)
-            std::string formattedIp;
-            try {
-                // 确保IP长度足够，如果不够则前面补0
-                std::string paddedIp = rawIp;
-                while (paddedIp.length() < 12) {
-                    paddedIp = "0" + paddedIp;
-                }
+                // 格式化为标准IPv4地址 (169031168192 -> 169.031.168.192)
+                std::string formattedIp;
+                try {
+                    // 确保IP长度足够，如果不够则前面补0
+                    std::string paddedIp = rawIp;
+                    while (paddedIp.length() < 12) {
+                        paddedIp = "0" + paddedIp;
+                    }
 
-                // 以3位一组分割，然后转换为标准IPv4格式
-                // 修改IP格式化逻辑，反转四组数字的顺序
-                formattedIp =
-                    std::to_string(std::stoi(paddedIp.substr(0, 3))) + "." +
-                    std::to_string(std::stoi(paddedIp.substr(3, 3))) + "." +
-                    std::to_string(std::stoi(paddedIp.substr(6, 3))) + "." +
-                    std::to_string(std::stoi(paddedIp.substr(9, 3)));
-                // 调用回调函数
-                if (callback) {
+                    // 以3位一组分割，然后转换为标准IPv4格式
+                    // 修改IP格式化逻辑，反转四组数字的顺序
+                    formattedIp =
+                        std::to_string(std::stoi(paddedIp.substr(0, 3))) + "." +
+                        std::to_string(std::stoi(paddedIp.substr(3, 3))) + "." +
+                        std::to_string(std::stoi(paddedIp.substr(6, 3))) + "." +
+                        std::to_string(std::stoi(paddedIp.substr(9, 3)));
+                    // 调用回调函数
                     int brightness = std::stoi(match[1]);
                     int power = std::stoi(match[3]);
                     int version = std::stoi(match[4]);
-                    callback(formattedIp, brightness, power, version);
+                    handlePacket(PACKET_DEVICE_STATUS, {formattedIp, brightness, power, version});
+                } catch (const std::exception& e) {
+                    LOG_ERROR("IP格式转换失败: {}", e.what());
+                    formattedIp = rawIp; // 转换失败时使用原始IP
                 }
-            } catch (const std::exception& e) {
-                LOG_ERROR("IP格式转换失败: {}", e.what());
-                formattedIp = rawIp; // 转换失败时使用原始IP
-            }
-            LOG_DEBUG("匹配到包类型5 (设备状态): 亮度 = {}, IP = {}, 电量 = {}, 固件版本 = {}", match[1].str(), formattedIp, match[3].str(), match[4].str());
-            return PACKET_DEVICE_STATUS;
-            }
-        break;
+                LOG_DEBUG("匹配到包类型5 (设备状态): 亮度 = {}, IP = {}, 电量 = {}, 固件版本 = {}", match[1].str(), formattedIp, match[3].str(), match[4].str());
+                return PACKET_DEVICE_STATUS;
+                }
+            break;
 
         case '6': // 数据包6：A6[亮度]B6
             if (std::regex_match(trimmedPacket, match, std::regex("^A6(\\d{1,3})B6$"))) {
@@ -682,5 +683,12 @@ void SerialPortManager::heartBeatTimeout()
         timeout_count = 0;
         stop();
         init();
+    }
+}
+
+void SerialPortManager::handlePacket(PacketType packetType, const std::vector<std::any>& params) {
+    auto it = callbacks.find(packetType);
+    if (it != callbacks.end()) {
+        it->second(params);
     }
 }
