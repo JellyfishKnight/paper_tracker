@@ -117,7 +117,7 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(QWidget *parent) :
         if (!config.right_ip.empty())
         {
             LOG_INFO("从配置文件中读取右眼地址成功");
-            current_left_ip = config.left_ip;
+            current_right_ip = config.right_ip;
             start_image_download(RIGHT_TAG);
         } else
         {
