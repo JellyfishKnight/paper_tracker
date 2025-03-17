@@ -31,6 +31,11 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(QWidget *parent) :
     config_writer = std::make_shared<ConfigWriter>("./eye_config.json");
     config = config_writer->get_config<PaperEyeTrackerConfig>();
     set_config();
+
+    left_http_server_ = std::make_shared<HttpServer>();
+    right_http_server_ = std::make_shared<HttpServer>();
+    left_http_server_->start(9002);
+    right_http_server_->start(9003);
     // LOG_INFO("正在初始化OSC...");
     // if (osc_manager->init("127.0.0.1", 8888)) {
     //     osc_manager->setLocationPrefix("");
@@ -183,6 +188,7 @@ void PaperEyeTrackerWindow::create_sub_thread()
                 cv::Mat show_image;
                 if (!frame.empty())
                 {
+                    left_http_server_->updateFrame(frame);
                     show_image = frame;
                 }
                 setVideoImage(LEFT_TAG, show_image);
@@ -231,6 +237,7 @@ void PaperEyeTrackerWindow::create_sub_thread()
                 cv::Mat show_image;
                 if (!frame.empty())
                 {
+                    left_http_server_->updateFrame(frame);
                     show_image = frame;
                 }
                 setVideoImage(RIGHT_TAG, show_image);
@@ -275,6 +282,14 @@ PaperEyeTrackerWindow::~PaperEyeTrackerWindow() {
     if (right_image_stream->isStreaming())
     {
         right_image_stream->stop();
+    }
+    if (left_http_server_)
+    {
+        left_http_server_->stop();
+    }
+    if (right_http_server_)
+    {
+        right_http_server_->stop();
     }
     osc_manager->close();
     config = generate_config();

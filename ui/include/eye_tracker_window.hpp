@@ -60,6 +60,7 @@ private:
     Ui::PaperEyeTrackerWindow ui{};
 
     std::shared_ptr<ESP32VideoStream> left_image_stream, right_image_stream;
+    std::shared_ptr<HttpServer> left_http_server_, right_http_server_;
     std::shared_ptr<SerialPortManager> serial_port_;
     std::shared_ptr<OscManager> osc_manager;
 
