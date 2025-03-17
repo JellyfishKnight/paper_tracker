@@ -36,10 +36,6 @@ PaperTrackerMainWindow::PaperTrackerMainWindow(QWidget *parent) :
     updater = std::make_shared<Updater>();
     connect_callbacks();
 
-    // 读取配置文件
-    config_writer = std::make_shared<ConfigWriter>("./config.json");
-    config = config_writer->get_config<PaperTrackerConfig>();
-
     // 检查客户端版本
     QTimer::singleShot(1000, this, [this] ()
     {
@@ -76,7 +72,7 @@ void PaperTrackerMainWindow::onFaceTrackerButtonClicked()
 {
     try
     {
-        auto window = new PaperFaceTrackerWindow(&config.face_tracker_config);
+        auto window = new PaperFaceTrackerWindow();
         window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
         window->setWindowModality(Qt::NonModal);     // 设置为非模态
         window->setWindowIcon(this->windowIcon());
@@ -92,7 +88,7 @@ void PaperTrackerMainWindow::onEyeTrackerButtonClicked()
 {
     try
     {
-        auto window = new PaperEyeTrackerWindow(&config.eye_tracker_config);
+        auto window = new PaperEyeTrackerWindow();
         window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
         window->setWindowModality(Qt::NonModal);     // 设置为非模态
         window->setWindowIcon(this->windowIcon());

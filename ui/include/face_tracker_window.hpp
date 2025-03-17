@@ -71,7 +71,7 @@ private:
     // UI组件
     Ui::PaperFaceTrackerMainWindow ui{};
 public:
-    explicit PaperFaceTrackerWindow( PaperFaceTrackerConfig* config, QWidget *parent = nullptr);
+    explicit PaperFaceTrackerWindow(QWidget *parent = nullptr);
     ~PaperFaceTrackerWindow() override;
 
     void setSerialStatusLabel(const QString& text) const;
@@ -169,8 +169,9 @@ private:
     std::shared_ptr<ESP32VideoStream> image_downloader;
     std::shared_ptr<Inference> inference;
     std::shared_ptr<OscManager> osc_manager;
+    std::shared_ptr<ConfigWriter> config_writer;
 
-    PaperFaceTrackerConfig* config;
+    PaperFaceTrackerConfig config;
 
     std::string firmware_version;
 

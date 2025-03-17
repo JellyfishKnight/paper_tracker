@@ -19,7 +19,7 @@ public:
     void updateFrame(const cv::Mat &frame);
 
     private slots:
-        void newConnection();
+    void newConnection();
     void clientDisconnected();
     void readyRead();
     void sendFrame();

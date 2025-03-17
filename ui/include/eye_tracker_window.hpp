@@ -19,13 +19,14 @@
 
 struct PaperEyeTrackerConfig
 {
-
-    REFLECT();
+    std::string left_ip;
+    std::string right_ip;
+    REFLECT(left_ip, right_ip);
 };
 
 class PaperEyeTrackerWindow : public QWidget {
 public:
-    explicit PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWidget *parent = nullptr);
+    explicit PaperEyeTrackerWindow(QWidget *parent = nullptr);
     ~PaperEyeTrackerWindow() override;
 
     std::string getSSID() const;
@@ -34,7 +35,7 @@ public:
     int get_max_fps() const;
     bool is_running() const;
 
-    void set_config();
+    void set_config() const;
     void setIPText(int version, const QString& text) const;
     void start_image_download(int version) const;
     void setSerialStatusLabel(const QString& text) const;
@@ -44,6 +45,8 @@ public:
     void updateWifiLabel(int version) const;
     void updateSerialLabel(int version) const;
     cv::Mat getVideoImage(int version) const;
+
+    PaperEyeTrackerConfig generate_config() const;
 private slots:
     void onSendButtonClicked();
     void onRestartButtonClicked();
@@ -72,6 +75,9 @@ private:
 
     std::string current_left_ip;
     std::string current_right_ip;
+
+    std::shared_ptr<ConfigWriter> config_writer;
+    PaperEyeTrackerConfig config;
 };
 
 

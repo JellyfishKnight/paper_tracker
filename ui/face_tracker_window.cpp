@@ -30,8 +30,8 @@
 #include <QCoreApplication>
 #include <roi_event.hpp>
 
-PaperFaceTrackerWindow::PaperFaceTrackerWindow(PaperFaceTrackerConfig* config, QWidget *parent)
-    : QWidget(parent), config(config)
+PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
+    : QWidget(parent)
 {
     if (instance == nullptr)
         instance = this;
@@ -61,6 +61,11 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(PaperFaceTrackerConfig* config, Q
     ui.PasswordText->setTabChangesFocus(true);
     // 清除所有控件的初始焦点，确保没有文本框自动获得焦点
     setFocus();
+
+    config_writer = std::make_shared<ConfigWriter>("./config.json");
+    // 读取配置文件
+    config = config_writer->get_config<PaperFaceTrackerConfig>();
+    set_config();
 
     // 添加ROI事件
     auto *roiFilter = new ROIEventFilter([this] (QRect rect, bool isEnd)
@@ -192,10 +197,10 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(PaperFaceTrackerConfig* config, Q
     {
         setSerialStatusLabel("有线模式面捕连接失败");
         LOG_WARN("有线模式面捕未连接，尝试从配置文件中读取地址...");
-        if (!config->wifi_ip.empty())
+        if (!config.wifi_ip.empty())
         {
             LOG_INFO("从配置文件中读取地址成功");
-            current_ip_ = config->wifi_ip;
+            current_ip_ = config.wifi_ip;
             start_image_download();
         } else
         {
@@ -246,7 +251,8 @@ void PaperFaceTrackerWindow::setVideoImage(const cv::Mat& image)
 
 PaperFaceTrackerWindow::~PaperFaceTrackerWindow() {
     stop();
-    *config = generate_config();
+    config = generate_config();
+    config_writer->write_config(config);
     LOG_INFO("正在关闭VRCFT");
     remove_log_window(ui.LogText);
     instance = nullptr;
@@ -609,32 +615,32 @@ PaperFaceTrackerConfig PaperFaceTrackerWindow::generate_config() const
 
 void PaperFaceTrackerWindow::set_config()
 {
-    current_brightness = config->brightness;
-    current_rotate_angle = config->rotate_angle;
-    ui.BrightnessBar->setValue(config->brightness);
-    ui.RotateImageBar->setValue(config->rotate_angle);
-    ui.EnergyModeBox->setCurrentIndex(config->energy_mode);
-    ui.UseFilterBox->setChecked(config->use_filter);
-    ui.textEdit->setPlainText(QString::fromStdString(config->wifi_ip));
+    current_brightness = config.brightness;
+    current_rotate_angle = config.rotate_angle;
+    ui.BrightnessBar->setValue(config.brightness);
+    ui.RotateImageBar->setValue(config.rotate_angle);
+    ui.EnergyModeBox->setCurrentIndex(config.energy_mode);
+    ui.UseFilterBox->setChecked(config.use_filter);
+    ui.textEdit->setPlainText(QString::fromStdString(config.wifi_ip));
     try
     {
-        ui.CheekPuffLeftBar->setValue(config->amp_map.at("cheekPuffLeft"));
-        ui.CheekPuffRightBar->setValue(config->amp_map.at("cheekPuffRight"));
-        ui.JawOpenBar->setValue(config->amp_map.at("jawOpen"));
-        ui.JawLeftBar->setValue(config->amp_map.at("jawLeft"));
-        ui.JawRightBar->setValue(config->amp_map.at("jawRight"));
-        ui.MouthLeftBar->setValue(config->amp_map.at("mouthLeft"));
-        ui.MouthRightBar->setValue(config->amp_map.at("mouthRight"));
-        ui.TongueOutBar->setValue(config->amp_map.at("tongueOut"));
-        ui.TongueUpBar->setValue(config->amp_map.at("tongueUp"));
-        ui.TongueDownBar->setValue(config->amp_map.at("tongueDown"));
-        ui.TongueLeftBar->setValue(config->amp_map.at("tongueLeft"));
-        ui.TongueRightBar->setValue(config->amp_map.at("tongueRight"));
+        ui.CheekPuffLeftBar->setValue(config.amp_map.at("cheekPuffLeft"));
+        ui.CheekPuffRightBar->setValue(config.amp_map.at("cheekPuffRight"));
+        ui.JawOpenBar->setValue(config.amp_map.at("jawOpen"));
+        ui.JawLeftBar->setValue(config.amp_map.at("jawLeft"));
+        ui.JawRightBar->setValue(config.amp_map.at("jawRight"));
+        ui.MouthLeftBar->setValue(config.amp_map.at("mouthLeft"));
+        ui.MouthRightBar->setValue(config.amp_map.at("mouthRight"));
+        ui.TongueOutBar->setValue(config.amp_map.at("tongueOut"));
+        ui.TongueUpBar->setValue(config.amp_map.at("tongueUp"));
+        ui.TongueDownBar->setValue(config.amp_map.at("tongueDown"));
+        ui.TongueLeftBar->setValue(config.amp_map.at("tongueLeft"));
+        ui.TongueRightBar->setValue(config.amp_map.at("tongueRight"));
     } catch (std::exception& e)
     {
         LOG_ERROR("配置文件中的振幅映射错误: {}", e.what());
     }
-    roi_rect = config->rect;
+    roi_rect = config.rect;
 }
 
 void PaperFaceTrackerWindow::onCheekPuffLeftChanged(int value) const

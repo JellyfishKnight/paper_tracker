@@ -8,7 +8,7 @@
 #include "ui_eye_tracker_window.h"
 
 
-PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWidget *parent) :
+PaperEyeTrackerWindow::PaperEyeTrackerWindow(QWidget *parent) :
     QWidget(parent) {
     if (instance == nullptr)
         instance = this;
@@ -28,6 +28,8 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWid
     setFocus();
 
     osc_manager = std::make_shared<OscManager>();
+    config_writer = std::make_shared<ConfigWriter>("./eye_config.json");
+    config = config_writer->get_config<PaperEyeTrackerConfig>();
     set_config();
     // LOG_INFO("正在初始化OSC...");
     // if (osc_manager->init("127.0.0.1", 8888)) {
@@ -88,6 +90,42 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWid
             }, Qt::QueuedConnection);
         }
     );
+
+
+    while (serial_port_->status() == SerialStatus::CLOSED) {}
+
+    if (serial_port_->status() == SerialStatus::FAILED)
+    {
+        LOG_WARN("没有检测到眼追设备，尝试从配置文件中读取地址...");
+        if (!config.left_ip.empty())
+        {
+            LOG_INFO("从配置文件中读取左眼地址成功");
+            current_left_ip = config.left_ip;
+            start_image_download(LEFT_TAG);
+        } else
+        {
+            QMessageBox msgBox;
+            msgBox.setWindowIcon(this->windowIcon());
+            msgBox.setText(tr("未找到左眼配置文件信息，请将设备通过数据线连接到电脑进行首次配置"));
+            msgBox.exec();
+        }
+        if (!config.right_ip.empty())
+        {
+            LOG_INFO("从配置文件中读取右眼地址成功");
+            current_left_ip = config.left_ip;
+            start_image_download(RIGHT_TAG);
+        } else
+        {
+            QMessageBox msgBox;
+            msgBox.setWindowIcon(this->windowIcon());
+            msgBox.setText(tr("未找到右眼配置文件信息，请将设备通过数据线连接到电脑进行首次配置"));
+            msgBox.exec();
+        }
+    } else
+    {
+        LOG_INFO("有线模式面捕连接成功");
+        setSerialStatusLabel("有线模式面捕连接成功");
+    }
 
     create_sub_thread();
 }
@@ -239,6 +277,8 @@ PaperEyeTrackerWindow::~PaperEyeTrackerWindow() {
         right_image_stream->stop();
     }
     osc_manager->close();
+    config = generate_config();
+    config_writer->write_config(config);
     LOG_INFO("系统已安全关闭");
     remove_log_window(ui.LogText);
     instance = nullptr;
@@ -359,9 +399,10 @@ bool PaperEyeTrackerWindow::is_running() const
     return app_is_running;
 }
 
-void PaperEyeTrackerWindow::set_config()
+void PaperEyeTrackerWindow::set_config() const
 {
-
+    ui.RightEyeIPAddress->setPlainText(QString::fromStdString(config.right_ip));
+    ui.LeftEyeIPAddress->setPlainText(QString::fromStdString(config.left_ip));
 }
 
 void PaperEyeTrackerWindow::setIPText(int version, const QString& text) const
@@ -485,4 +526,12 @@ void PaperEyeTrackerWindow::setWifiStatusLabel(int version, const QString& text)
     {
         ui.RightEyeWifiStatus->setText(text.toUtf8().constData());
     }
+}
+
+PaperEyeTrackerConfig PaperEyeTrackerWindow::generate_config() const
+{
+    PaperEyeTrackerConfig res_config;
+    res_config.left_ip = ui.LeftEyeIPAddress->toPlainText().toStdString();
+    res_config.right_ip = ui.RightEyeIPAddress->toPlainText().toStdString();
+    return res_config;
 }
