@@ -13,6 +13,9 @@
 #include <QTimer>
 #include "config_writer.hpp"
 
+#define LEFT_TAG 2
+#define RIGHT_TAG 3
+
 struct PaperEyeTrackerConfig
 {
 
@@ -35,6 +38,10 @@ public:
     void setRightIPText(const QString& text) const;
     void start_image_download(int version) const;
 
+    void setVideoImage(int version, const cv::Mat& image);
+    void updateWifiLabel(int version) const;
+    void updateSerialLabel(int version) const;
+    cv::Mat getVideoImage(int version) const;
 private slots:
     void onSendButtonClicked();
     void onRestartButtonClicked();
@@ -42,6 +49,8 @@ private slots:
 
 private:
     void connect_callbacks();
+
+    void create_sub_thread();
 
     Ui::PaperEyeTrackerWindow ui{};
 

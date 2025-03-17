@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'paper_tracker_main_window.ui'
+** Form generated from reading UI file 'main_window.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.8.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef UI_PAPER_TRACKER_MAIN_WINDOW_H
-#define UI_PAPER_TRACKER_MAIN_WINDOW_H
+#ifndef UI_MAIN_WINDOW_H
+#define UI_MAIN_WINDOW_H
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
@@ -97,4 +97,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // UI_PAPER_TRACKER_MAIN_WINDOW_H
+#endif // UI_MAIN_WINDOW_H

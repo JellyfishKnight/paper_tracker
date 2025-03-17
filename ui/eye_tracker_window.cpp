@@ -87,6 +87,130 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWid
             }, Qt::QueuedConnection);
         }
     );
+
+    create_sub_thread();
+}
+
+void PaperEyeTrackerWindow::setVideoImage(int version, const cv::Mat& image)
+{
+    auto image_label = version == LEFT_TAG ? ui.LeftEyeImage : ui.RightEyeImage;
+    if (image.empty())
+    {
+        QMetaObject::invokeMethod(this, [this, image_label]()
+        {
+            image_label->clear(); // 清除图片
+            image_label->setText(tr("                          没有图像输入"));
+        }, Qt::QueuedConnection);
+        return ;
+    }
+    QMetaObject::invokeMethod(this, [this, image = image.clone(), image_label]() {
+        auto qimage = QImage(image.data, image.cols, image.rows, image.step, QImage::Format_RGB888);
+        auto pix_map = QPixmap::fromImage(qimage);
+        image_label->setPixmap(pix_map);
+        image_label->setScaledContents(true);
+        image_label->update();
+    }, Qt::QueuedConnection);
+}
+
+void PaperEyeTrackerWindow::create_sub_thread()
+{
+    update_left_ui_thread = std::thread([this] ()
+    {
+        auto last_time = std::chrono::high_resolution_clock::now();
+        double fps_total = 0;
+        double fps_count = 0;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        while (is_running())
+        {
+            updateWifiLabel(LEFT_TAG);
+            updateSerialLabel(LEFT_TAG);
+            auto start_time = std::chrono::high_resolution_clock::now();
+            try {
+                if (fps_total > 1000)
+                {
+                    fps_count = 0;
+                    fps_total = 0;
+                }
+                // caculate fps
+                auto start = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(start - last_time);
+                last_time = start;
+                auto fps = 1000.0 / static_cast<double>(duration.count());
+                fps_total += fps;
+                fps_count += 1;
+                fps = fps_total/fps_count;
+                cv::Mat frame = getVideoImage(LEFT_TAG);
+                // draw rect on frame
+                cv::Mat show_image;
+                if (!frame.empty())
+                {
+                    show_image = frame;
+                }
+                setVideoImage(LEFT_TAG, show_image);
+                // 控制帧率
+            } catch (const std::exception& e) {
+                // 使用Qt方式记录日志，而不是minilog
+                QMetaObject::invokeMethod(this, [&e]() {
+                    LOG_ERROR("错误, 视频处理异常: {}", e.what());
+                }, Qt::QueuedConnection);
+            }
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count ();
+            int delay_ms = std::max(0, static_cast<int>(1000.0 / std::min(get_max_fps() + 30, 50) - elapsed));
+            // LOG_DEBUG("UIFPS:" +  std::to_string(min(get_max_fps() + 30, 60)));
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+        }
+    });
+
+    update_right_ui_thread = std::thread([this] ()
+    {
+        auto last_time = std::chrono::high_resolution_clock::now();
+        double fps_total = 0;
+        double fps_count = 0;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        while (is_running())
+        {
+            updateWifiLabel(RIGHT_TAG);
+            updateSerialLabel(RIGHT_TAG);
+            auto start_time = std::chrono::high_resolution_clock::now();
+            try {
+                if (fps_total > 1000)
+                {
+                    fps_count = 0;
+                    fps_total = 0;
+                }
+                // calculate fps
+                auto start = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(start - last_time);
+                last_time = start;
+                auto fps = 1000.0 / static_cast<double>(duration.count());
+                fps_total += fps;
+                fps_count += 1;
+                fps = fps_total/fps_count;
+                cv::Mat frame = getVideoImage(RIGHT_TAG);
+                // draw rect on frame
+                cv::Mat show_image;
+                if (!frame.empty())
+                {
+                    show_image = frame;
+                }
+                setVideoImage(RIGHT_TAG, show_image);
+                // 控制帧率
+            } catch (const std::exception& e) {
+                // 使用Qt方式记录日志，而不是minilog
+                QMetaObject::invokeMethod(this, [&e]() {
+                    LOG_ERROR("错误, 视频处理异常: {}", e.what());
+                }, Qt::QueuedConnection);
+            }
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count ();
+            int delay_ms = max(0, static_cast<int>(1000.0 / min(get_max_fps() + 30, 50) - elapsed));
+            // LOG_DEBUG("UIFPS:" +  std::to_string(min(get_max_fps() + 30, 60)));
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+        }
+    });
+
+
 }
 
 PaperEyeTrackerWindow::~PaperEyeTrackerWindow() {
@@ -251,7 +375,7 @@ void PaperEyeTrackerWindow::setRightIPText(const QString& text) const
 
 void PaperEyeTrackerWindow::start_image_download(int version) const
 {
-    if (version == 2)
+    if (version == LEFT_TAG)
     {
         if (left_image_stream->isStreaming())
         {
@@ -269,7 +393,7 @@ void PaperEyeTrackerWindow::start_image_download(int version) const
                 left_image_stream->init("ws://" + url);
             }
         left_image_stream->start();
-    } else if (version == 3)
+    } else if (version == RIGHT_TAG)
     {
         if (right_image_stream->isStreaming())
         {
@@ -288,4 +412,31 @@ void PaperEyeTrackerWindow::start_image_download(int version) const
             }
         right_image_stream->start();
     }
+}
+
+void PaperEyeTrackerWindow::updateWifiLabel(int version) const
+{
+    if (version == LEFT_TAG)
+    {
+        ui.LeftEyeWifiStatus->setText(tr("左眼Wifi已连接"));
+    } else if (version == RIGHT_TAG)
+    {
+        ui.RightEyeWifiStatus->setText(tr("右眼Wifi已连接"));
+    }
+}
+
+void PaperEyeTrackerWindow::updateSerialLabel(int version) const
+{
+    if (version == LEFT_TAG)
+    {
+        ui.EyeWindowSerialStatus->setText(tr("左眼设备已连接"));
+    } else if (version == RIGHT_TAG)
+    {
+        ui.EyeWindowSerialStatus->setText(tr("右眼设备已连接"));
+    }
+}
+
+cv::Mat PaperEyeTrackerWindow::getVideoImage(int version) const
+{
+
 }

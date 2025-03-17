@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'paper_eye_tracker_window.ui'
+** Form generated from reading UI file 'eye_tracker_window.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.8.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef UI_PAPER_EYE_TRACKER_WINDOW_H
-#define UI_PAPER_EYE_TRACKER_WINDOW_H
+#ifndef UI_EYE_TRACKER_WINDOW_H
+#define UI_EYE_TRACKER_WINDOW_H
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
@@ -102,8 +102,8 @@ public:
     void retranslateUi(QWidget *PaperEyeTrackerWindow)
     {
         PaperEyeTrackerWindow->setWindowTitle(QCoreApplication::translate("PaperEyeTrackerWindow", "PaperEyeTrackerWindow", nullptr));
-        LeftEyeImage->setText(QString());
-        RightEyeImage->setText(QString());
+        LeftEyeImage->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "                          \346\262\241\346\234\211\345\233\276\345\203\217\350\276\223\345\205\245", nullptr));
+        RightEyeImage->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "                          \346\262\241\346\234\211\345\233\276\345\203\217\350\276\223\345\205\245", nullptr));
         SendButton->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\217\221\351\200\201", nullptr));
         RestartButton->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\351\207\215\345\220\257", nullptr));
         FlashButton->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\210\267\345\206\231\345\233\272\344\273\266", nullptr));
@@ -122,4 +122,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // UI_PAPER_EYE_TRACKER_WINDOW_H
+#endif // UI_EYE_TRACKER_WINDOW_H
