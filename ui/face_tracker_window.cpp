@@ -19,8 +19,8 @@
  */
 
 #include <opencv2/imgproc.hpp>
-#include "paper_face_tracker_window.hpp"
-#include "ui_paper_face_tracker_window.h"
+#include "face_tracker_window.hpp"
+#include "ui_face_tracker_window.h"
 #include <QMessageBox>
 #include <codecvt>
 #include <locale>
@@ -31,13 +31,17 @@
 #include <roi_event.hpp>
 
 PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
-    : QWidget(parent), config(config)
+    : QWidget(parent)
 {
+    if (instance == nullptr)
+        instance = this;
+    else
+        throw std::exception("当前已经打开了面捕窗口，请不要重复打开");
     // 基本UI设置
     setFixedSize(848, 538);
     ui.setupUi(this);
     ui.LogText->setMaximumBlockCount(200);
-    init_logger(ui.LogText);
+    append_log_window(ui.LogText);
     LOG_INFO("系统初始化中...");
     // 初始化串口连接状态
     ui.SerialConnectLabel->setText(tr("有线模式未连接"));
@@ -57,6 +61,11 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
     ui.PasswordText->setTabChangesFocus(true);
     // 清除所有控件的初始焦点，确保没有文本框自动获得焦点
     setFocus();
+
+    config_writer = std::make_shared<ConfigWriter>("./config.json");
+    // 读取配置文件
+    config = config_writer->get_config<PaperFaceTrackerConfig>();
+    set_config();
 
     // 添加ROI事件
     auto *roiFilter = new ROIEventFilter([this] (QRect rect, bool isEnd)
@@ -108,7 +117,7 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
     vrcftProcess = new QProcess(this);
     // 启动VRCFT应用程序
     // 尝试方法2: PowerShell查找并启动
-    QString command2 = "powershell -Command \"$pkg = Get-AppxPackage | Where-Object {$_.Name -like '*96ba052f*'}; if($pkg) { Start-Process ($pkg.InstallLocation + '\\VRCFaceTracking.exe') }\"";
+    QString command2 = R"(powershell -Command "$pkg = Get-AppxPackage | Where-Object {$_.Name -like '*96ba052f*'}; if($pkg) { Start-Process ($pkg.InstallLocation + '\VRCFaceTracking.exe') }")";
     vrcftProcess->start(command2);
     // 连接信号以检测进程状态
     connect(vrcftProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
@@ -121,8 +130,7 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
     });
     inference = std::make_shared<Inference>();
     osc_manager = std::make_shared<OscManager>();
-    config_writer = std::make_shared<ConfigWriter>("./config.json");
-    set_config(config_writer->get_config<PaperFaceTrackerConfig>());
+    set_config();
     // Load model
     LOG_INFO("正在加载推理模型...");
     try {
@@ -144,36 +152,42 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
     // 初始化串口和wifi
     serial_port_manager = std::make_shared<SerialPortManager>();
     image_downloader = std::make_shared<ESP32VideoStream>();
-    updater = std::make_shared<Updater>();
-    http_server = std::make_shared<HttpServer>();
-    if (http_server->start(80)) {
-        LOG_INFO("HTTP服务器已启动，监听端口: 80");
-    } else {
-        LOG_ERROR("HTTP服务器启动失败");
-    }
-    image_downloader->setHttpServer(http_server);
     LOG_INFO("初始化有线模式");
-
     serial_port_manager->init();
     // init serial port manager
-    serial_port_manager->setDeviceStatusCallback([this]
-                                                        (const std::string& ip, int brightness, int power, int version) {
-        // 使用Qt的线程安全方式更新UI
-        QMetaObject::invokeMethod(this, [ip, brightness, power, version, this]() {
-
-            // 只在 IP 地址变化时更新显示
-            if (current_ip_ != "http://" + ip)
+    serial_port_manager->registerCallback(
+        PACKET_DEVICE_STATUS,
+        [this](const std::string& ip, int brightness, int power, int version) {
+            if (version != 1)
             {
-                current_ip_ = "http://" + ip;
-                // 更新IP地址显示，添加 http:// 前缀
-                this->setIPText(QString::fromStdString(current_ip_));
-                LOG_INFO("IP地址已更新: {}", current_ip_);
-                start_image_download();
+                static bool version_warning = false;
+                QString version_str = version == 2 ? "左眼追" : "右眼追";
+                if (!version_warning)
+                {
+                    QMessageBox msgBox;
+                    msgBox.setWindowIcon(this->windowIcon());
+                    msgBox.setText(tr("检测到") + version_str + tr("设备，请打开眼追界面进行设置"));
+                    msgBox.exec();
+                    version_warning = true;
+                }
+                return ;
             }
-            firmware_version = std::to_string(version);
-            // 可以添加其他状态更新的日志，如果需要的话
-        }, Qt::QueuedConnection);
-    });
+            // 使用Qt的线程安全方式更新UI
+            QMetaObject::invokeMethod(this, [ip, brightness, power, version, this]() {
+                // 只在 IP 地址变化时更新显示
+                if (current_ip_ != "http://" + ip)
+                {
+                    current_ip_ = "http://" + ip;
+                    // 更新IP地址显示，添加 http:// 前缀
+                    this->setIPText(QString::fromStdString(current_ip_));
+                    LOG_INFO("IP地址已更新: {}", current_ip_);
+                    start_image_download();
+                }
+                firmware_version = std::to_string(version);
+                // 可以添加其他状态更新的日志，如果需要的话
+            }, Qt::QueuedConnection);
+        }
+    );
 
     LOG_DEBUG("等待有线模式面捕连接");
     while (serial_port_manager->status() == SerialStatus::CLOSED) {}
@@ -183,12 +197,10 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
     {
         setSerialStatusLabel("有线模式面捕连接失败");
         LOG_WARN("有线模式面捕未连接，尝试从配置文件中读取地址...");
-        config = config_writer->get_config<PaperFaceTrackerConfig>();
         if (!config.wifi_ip.empty())
         {
             LOG_INFO("从配置文件中读取地址成功");
             current_ip_ = config.wifi_ip;
-            set_config(config);
             start_image_download();
         } else
         {
@@ -239,17 +251,11 @@ void PaperFaceTrackerWindow::setVideoImage(const cv::Mat& image)
 
 PaperFaceTrackerWindow::~PaperFaceTrackerWindow() {
     stop();
-    LOG_INFO("开始自动保存");
-    if (config_writer->write_config(generate_config()))
-    {
-        LOG_INFO("已保存配置");
-    } else
-    {
-        LOG_ERROR("配置文件保存失败");
-    }
-    if (http_server) {
-        http_server->stop();
-    }
+    config = generate_config();
+    config_writer->write_config(config);
+    LOG_INFO("正在关闭VRCFT");
+    remove_log_window(ui.LogText);
+    instance = nullptr;
 }
 
 void PaperFaceTrackerWindow::bound_pages() {
@@ -372,7 +378,6 @@ void PaperFaceTrackerWindow::connect_callbacks()
     connect(ui.UseFilterBox, &QCheckBox::checkStateChanged, this, &PaperFaceTrackerWindow::onUseFilterClicked);
     connect(ui.wifi_send_Button, &QPushButton::clicked, this, &PaperFaceTrackerWindow::onSendButtonClicked);
     connect(ui.EnergyModeBox, &QComboBox::currentIndexChanged, this, &PaperFaceTrackerWindow::onEnergyModeChanged);
-    connect(ui.SaveParamConfigButton, &QPushButton::clicked, this, &PaperFaceTrackerWindow::onSaveConfigButtonClicked);
 
     connect(ui.JawOpenBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onJawOpenChanged);
     connect(ui.JawLeftBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onJawLeftChanged);
@@ -384,11 +389,8 @@ void PaperFaceTrackerWindow::connect_callbacks()
     connect(ui.TongueRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onTongueRightChanged);
     connect(ui.TongueUpBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onTongueUpChanged);
     connect(ui.TongueDownBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onTongueDownChanged);
-    connect(ui.CheekPuffLeftBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onCheeckPuffLeftChanged);
-    connect(ui.CheekPuffRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onCheeckPuffRightChanged);
-
-    // update
-    connect(ui.CheckFirmwareVersionButton, &QPushButton::clicked, this, &PaperFaceTrackerWindow::onCheckFirmwareVersionClicked);
+    connect(ui.CheekPuffLeftBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onCheekPuffLeftChanged);
+    connect(ui.CheekPuffRightBar, &QScrollBar::valueChanged, this, &PaperFaceTrackerWindow::onCheekPuffRightChanged);
 }
 
 float PaperFaceTrackerWindow::getRotateAngle() const
@@ -587,13 +589,13 @@ int PaperFaceTrackerWindow::get_max_fps() const
 
 PaperFaceTrackerConfig PaperFaceTrackerWindow::generate_config() const
 {
-    PaperFaceTrackerConfig config;
-    config.brightness = current_brightness;
-    config.rotate_angle = current_rotate_angle;
-    config.energy_mode = ui.EnergyModeBox->currentIndex();
-    config.use_filter = ui.UseFilterBox->isChecked();
-    config.wifi_ip = ui.textEdit->toPlainText().toStdString();
-    config.amp_map = {
+    PaperFaceTrackerConfig res_config;
+    res_config.brightness = current_brightness;
+    res_config.rotate_angle = current_rotate_angle;
+    res_config.energy_mode = ui.EnergyModeBox->currentIndex();
+    res_config.use_filter = ui.UseFilterBox->isChecked();
+    res_config.wifi_ip = ui.textEdit->toPlainText().toStdString();
+    res_config.amp_map = {
         {"cheekPuffLeft", ui.CheekPuffLeftBar->value()},
         {"cheekPuffRight", ui.CheekPuffRightBar->value()},
         {"jawOpen", ui.JawOpenBar->value()},
@@ -607,11 +609,11 @@ PaperFaceTrackerConfig PaperFaceTrackerWindow::generate_config() const
         {"tongueLeft", ui.TongueLeftBar->value()},
         {"tongueRight", ui.TongueRightBar->value()},
     };
-    config.rect = roi_rect;
-    return config;
+    res_config.rect = roi_rect;
+    return res_config;
 }
 
-void PaperFaceTrackerWindow::set_config(const PaperFaceTrackerConfig& config)
+void PaperFaceTrackerWindow::set_config()
 {
     current_brightness = config.brightness;
     current_rotate_angle = config.rotate_angle;
@@ -641,42 +643,27 @@ void PaperFaceTrackerWindow::set_config(const PaperFaceTrackerConfig& config)
     roi_rect = config.rect;
 }
 
-
-void PaperFaceTrackerWindow::onSaveConfigButtonClicked()
-{
-    LOG_INFO("保存配置中...");
-    config = std::move(generate_config());
-    if (config_writer->write_config(config))
-    {
-        LOG_INFO("已保存配置");
-    } else
-    {
-        LOG_ERROR("配置文件保存失败");
-    }
-}
-
-
-void PaperFaceTrackerWindow::onCheeckPuffLeftChanged(int value) const
+void PaperFaceTrackerWindow::onCheekPuffLeftChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }
 
-void PaperFaceTrackerWindow::onCheeckPuffRightChanged(int value) const
+void PaperFaceTrackerWindow::onCheekPuffRightChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }
 
-void PaperFaceTrackerWindow::onJawOpenChanged(int value)
+void PaperFaceTrackerWindow::onJawOpenChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }
 
-void PaperFaceTrackerWindow::onJawLeftChanged(int value)
+void PaperFaceTrackerWindow::onJawLeftChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }
 
-void PaperFaceTrackerWindow::onJawRightChanged(int value)
+void PaperFaceTrackerWindow::onJawRightChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }
@@ -706,7 +693,7 @@ void PaperFaceTrackerWindow::onTongueRightChanged(int value)
     inference->set_amp_map(getAmpMap());
 }
 
-void PaperFaceTrackerWindow::onTongueUpChanged(int value)
+void PaperFaceTrackerWindow::onTongueUpChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }
@@ -779,29 +766,6 @@ void PaperFaceTrackerWindow::updateSerialLabel() const
 cv::Mat PaperFaceTrackerWindow::getVideoImage() const
 {
     return std::move(image_downloader->getLatestFrame());
-}
-
-void PaperFaceTrackerWindow::onCheckFirmwareVersionClicked()
-{
-    if (getSerialStatus() != SerialStatus::OPENED)
-    {
-        QMessageBox::information(this, tr("固件版本"), tr("有线模式面捕未连接，无法获取固件版本"));
-        return ;
-    }
-    auto version = updater->getCurrentVersion();
-    if (version.has_value())
-    {
-        if (version.value().version.firmware == getFirmwareVersion())
-        {
-            QMessageBox::information(this, tr("固件版本"), tr("固件版本已是最新"));
-        } else
-        {
-            QMessageBox::information(this, tr("固件版本"), tr("固件版本不是最新，建议烧录最新固件"));
-        }
-    } else
-    {
-        QMessageBox::critical(this, tr("错误"), tr("无法获取最新固件版本信息"));
-    }
 }
 
 std::string PaperFaceTrackerWindow::getFirmwareVersion() const

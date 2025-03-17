@@ -15,7 +15,7 @@
 #include <osc.hpp>
 #include <QTimer>
 
-#include "ui_paper_face_tracker_window.h"
+#include "ui_face_tracker_window.h"
 #include "inference.hpp"
 #include "serial.hpp"
 #include "logger.hpp"
@@ -95,10 +95,6 @@ public:
     using FuncWithVal = std::function<void(int)>;
     // let user decide what to do with these action
     void setOnUseFilterClickedFunc(FuncWithVal func);
-    void setOnSaveConfigButtonClickedFunc(FuncWithoutArgs func);
-    void setOnAmpMapChangedFunc(FuncWithoutArgs func);
-    void set_update_thread(FuncWithoutArgs func);
-    void set_inference_thread(FuncWithoutArgs func);
     void set_osc_send_thead(FuncWithoutArgs func);
 
     bool is_running() const;
@@ -108,7 +104,7 @@ public:
 
     PaperFaceTrackerConfig generate_config() const;
 
-    void set_config(const PaperFaceTrackerConfig& config);
+    void set_config();
 
     std::unordered_map<std::string, int> getAmpMap() const;
 
@@ -128,22 +124,19 @@ private slots:
     void onUseFilterClicked(int value) const;
     void onFlashButtonClicked();
     void onEnergyModeChanged(int value);
-    void onSaveConfigButtonClicked();
 
-    void onCheeckPuffLeftChanged(int value) const;
-    void onCheeckPuffRightChanged(int value) const;
-    void onJawOpenChanged(int value);
-    void onJawLeftChanged(int value);
-    void onJawRightChanged(int value);
+    void onCheekPuffLeftChanged(int value) const;
+    void onCheekPuffRightChanged(int value) const;
+    void onJawOpenChanged(int value) const;
+    void onJawLeftChanged(int value) const;
+    void onJawRightChanged(int value) const;
     void onMouthLeftChanged(int value) const;
     void onMouthRightChanged(int value);
     void onTongueOutChanged(int value);
     void onTongueLeftChanged(int value);
     void onTongueRightChanged(int value);
-    void onTongueUpChanged(int value);
+    void onTongueUpChanged(int value) const;
     void onTongueDownChanged(int value) const;
-
-    void onCheckFirmwareVersionClicked();
 private:
     void start_image_download() const;
 
@@ -174,7 +167,6 @@ private:
 
     std::shared_ptr<SerialPortManager> serial_port_manager;
     std::shared_ptr<ESP32VideoStream> image_downloader;
-    std::shared_ptr<Updater> updater;
     std::shared_ptr<Inference> inference;
     std::shared_ptr<OscManager> osc_manager;
     std::shared_ptr<ConfigWriter> config_writer;
@@ -182,6 +174,8 @@ private:
     PaperFaceTrackerConfig config;
 
     std::string firmware_version;
+
+    inline static PaperFaceTrackerWindow* instance = nullptr;
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 };

@@ -5,7 +5,7 @@
 #include <QProgressDialog>
 #include <curl/curl.h>
 #include <inference.hpp>
-#include <paper_tracker_main_window.hpp>
+#include <main_window.hpp>
 #include <QApplication>
 #include <QThread>
 #include <updater.hpp>

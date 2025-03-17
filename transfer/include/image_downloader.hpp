@@ -53,9 +53,7 @@ public:
             heartbeatTimer->start(50);
         }
     }
-    void setHttpServer(std::shared_ptr<HttpServer> server) {
-        http_server = server;
-    }
+
 private slots:
     // WebSocket连接成功的槽函数
     void onConnected();
@@ -86,6 +84,5 @@ private:
     std::queue<cv::Mat> image_buffer_queue;
 
     int image_not_receive_count = 0;
-    std::shared_ptr<HttpServer> http_server;
     QTimer* heartbeatTimer;
 };

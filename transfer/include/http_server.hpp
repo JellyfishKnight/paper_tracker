@@ -10,8 +10,6 @@
 #include <QMutex>
 
 class HttpServer : public QObject {
-    Q_OBJECT
-
 public:
     explicit HttpServer(QObject *parent = nullptr);
     ~HttpServer();
@@ -20,8 +18,8 @@ public:
     void stop();
     void updateFrame(const cv::Mat &frame);
 
-    private slots:
-        void newConnection();
+private slots:
+    void newConnection();
     void clientDisconnected();
     void readyRead();
     void sendFrame();

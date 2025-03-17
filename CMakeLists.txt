@@ -124,7 +124,6 @@ add_library(
     transfer/video_reader.cpp
     transfer/osc.cpp
     transfer/image_downloader.cpp
-    transfer/include/http_server.hpp
     transfer/http_server.cpp
 )
 
@@ -154,12 +153,12 @@ target_link_libraries(
 add_library(
     ui
     ui/roi_event.cpp
-    ui/paper_face_tracker_window.cpp
-    ui/paper_face_tracker_window.ui
-    ui/paper_tracker_main_window.cpp
-    ui/paper_tracker_main_window.ui
-    ui/paper_eye_tracker_window.cpp
-    ui/paper_eye_tracker_window.ui
+        ui/face_tracker_window.cpp
+        ui/face_tracker_window.ui
+        ui/main_window.cpp
+        ui/main_window.ui
+        ui/eye_tracker_window.cpp
+        ui/eye_tracker_window.ui
 )
 
 target_include_directories(

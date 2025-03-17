@@ -5,11 +5,12 @@
 #ifndef PAPER_TRACKER_MAIN_WINDOW_HPP
 #define PAPER_TRACKER_MAIN_WINDOW_HPP
 
+#include <eye_tracker_window.hpp>
+#include <face_tracker_window.hpp>
 #include <QWidget>
 #include <updater.hpp>
-#include <QObject>
 
-#include "ui_paper_tracker_main_window.h"
+#include "ui_main_window.h"
 
 class PaperTrackerMainWindow final : public QWidget {
 public:

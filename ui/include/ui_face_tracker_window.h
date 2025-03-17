@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'paper_face_tracker_window.ui'
+** Form generated from reading UI file 'face_tracker_window.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.8.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef UI_PAPER_FACE_TRACKER_WINDOW_H
-#define UI_PAPER_FACE_TRACKER_WINDOW_H
+#ifndef UI_FACE_TRACKER_WINDOW_H
+#define UI_FACE_TRACKER_WINDOW_H
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
@@ -86,12 +86,10 @@ public:
     QScrollBar *TongueUpBar;
     QScrollBar *TongueRightBar;
     QScrollBar *TongueLeftBar;
-    QPushButton *SaveParamConfigButton;
     QLabel *ImageLabelCal;
     QLabel *label_3;
     QLabel *label_4;
     QLabel *label_19;
-    QPushButton *CheckFirmwareVersionButton;
     QPushButton *MainPageButton;
     QPushButton *CalibrationPageButton;
     QLabel *WifiConnectLabel;
@@ -333,9 +331,6 @@ public:
         TongueLeftBar->setGeometry(QRect(120, 410, 201, 16));
         TongueLeftBar->setOrientation(Qt::Orientation::Horizontal);
         scrollArea->setWidget(scrollAreaWidgetContents);
-        SaveParamConfigButton = new QPushButton(page_2);
-        SaveParamConfigButton->setObjectName("SaveParamConfigButton");
-        SaveParamConfigButton->setGeometry(QRect(510, 30, 131, 41));
         ImageLabelCal = new QLabel(page_2);
         ImageLabelCal->setObjectName("ImageLabelCal");
         ImageLabelCal->setGeometry(QRect(510, 190, 280, 280));
@@ -348,9 +343,6 @@ public:
         label_19 = new QLabel(page_2);
         label_19->setObjectName("label_19");
         label_19->setGeometry(QRect(130, 10, 61, 16));
-        CheckFirmwareVersionButton = new QPushButton(page_2);
-        CheckFirmwareVersionButton->setObjectName("CheckFirmwareVersionButton");
-        CheckFirmwareVersionButton->setGeometry(QRect(510, 80, 131, 41));
         stackedWidget->addWidget(page_2);
         MainPageButton = new QPushButton(PaperFaceTrackerMainWindow);
         MainPageButton->setObjectName("MainPageButton");
@@ -360,7 +352,7 @@ public:
         CalibrationPageButton->setGeometry(QRect(110, 10, 75, 23));
         WifiConnectLabel = new QLabel(PaperFaceTrackerMainWindow);
         WifiConnectLabel->setObjectName("WifiConnectLabel");
-        WifiConnectLabel->setGeometry(QRect(310, 10, 81, 31));
+        WifiConnectLabel->setGeometry(QRect(310, 10, 101, 31));
         QFont font;
         font.setBold(true);
         font.setItalic(true);
@@ -369,7 +361,7 @@ public:
         WifiConnectLabel->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
         SerialConnectLabel = new QLabel(PaperFaceTrackerMainWindow);
         SerialConnectLabel->setObjectName("SerialConnectLabel");
-        SerialConnectLabel->setGeometry(QRect(400, 10, 131, 31));
+        SerialConnectLabel->setGeometry(QRect(440, 10, 131, 31));
         QFont font1;
         font1.setBold(true);
         font1.setItalic(true);
@@ -419,16 +411,14 @@ public:
         label_8->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\344\270\213\345\267\264\345\267\246\347\247\273", nullptr));
         label_12->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\350\210\214\345\244\264\344\274\270\345\207\272", nullptr));
         label_31->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\350\210\214\345\244\264\345\220\221\345\217\263", nullptr));
-        SaveParamConfigButton->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\344\277\235\345\255\230\345\217\202\346\225\260", nullptr));
         ImageLabelCal->setText(QString());
         label_3->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\346\224\276\345\244\247\345\200\215\347\216\207", nullptr));
         label_4->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "x3", nullptr));
         label_19->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "x1", nullptr));
-        CheckFirmwareVersionButton->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\346\243\200\346\237\245\345\233\272\344\273\266\346\233\264\346\226\260", nullptr));
         MainPageButton->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\344\270\273\351\241\265\351\235\242", nullptr));
         CalibrationPageButton->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\346\240\207\345\256\232\351\241\265\351\235\242", nullptr));
-        WifiConnectLabel->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "wifi\346\234\252\350\277\236\346\216\245", nullptr));
-        SerialConnectLabel->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\346\225\260\346\215\256\347\272\277\346\234\252\350\277\236\346\216\245", nullptr));
+        WifiConnectLabel->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\351\235\242\346\215\225wifi\346\234\252\350\277\236\346\216\245", nullptr));
+        SerialConnectLabel->setText(QCoreApplication::translate("PaperFaceTrackerMainWindow", "\351\235\242\346\215\225\346\225\260\346\215\256\347\272\277\346\234\252\350\277\236\346\216\245", nullptr));
     } // retranslateUi
 
 };
@@ -439,4 +429,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // UI_PAPER_FACE_TRACKER_WINDOW_H
+#endif // UI_FACE_TRACKER_WINDOW_H

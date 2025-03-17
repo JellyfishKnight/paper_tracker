@@ -4,14 +4,14 @@
 
 // You may need to build the project (run Qt uic code generator) to get "ui_paper_tracker_main_window.h" resolved
 
-#include "paper_tracker_main_window.hpp"
+#include "main_window.hpp"
 
-#include <paper_eye_tracker_window.hpp>
-#include <paper_face_tracker_window.hpp>
+#include <eye_tracker_window.hpp>
+#include <face_tracker_window.hpp>
 #include <QFile>
 #include <QTimer>
 
-#include "ui_paper_tracker_main_window.h"
+#include "ui_main_window.h"
 
 
 PaperTrackerMainWindow::PaperTrackerMainWindow(QWidget *parent) :
@@ -36,6 +36,7 @@ PaperTrackerMainWindow::PaperTrackerMainWindow(QWidget *parent) :
     updater = std::make_shared<Updater>();
     connect_callbacks();
 
+    // 检查客户端版本
     QTimer::singleShot(1000, this, [this] ()
     {
         auto remote_opt = updater->getClientVersionSync(nullptr);
@@ -69,20 +70,34 @@ PaperTrackerMainWindow::~PaperTrackerMainWindow() = default;
 
 void PaperTrackerMainWindow::onFaceTrackerButtonClicked()
 {
-    auto window = new PaperFaceTrackerWindow();
-    window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
-    window->setWindowModality(Qt::NonModal);     // 设置为非模态
-    window->setWindowIcon(this->windowIcon());
-    window->show();
+    try
+    {
+        auto window = new PaperFaceTrackerWindow();
+        window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
+        window->setWindowModality(Qt::NonModal);     // 设置为非模态
+        window->setWindowIcon(this->windowIcon());
+        window->setParent(this, Qt::Window);
+        window->show();
+    } catch (std::exception& e)
+    {
+        QMessageBox::critical(this, tr("错误"), e.what());
+    }
 }
 
 void PaperTrackerMainWindow::onEyeTrackerButtonClicked()
 {
-    auto window = new PaperEyeTrackerWindow();
-    window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
-    window->setWindowModality(Qt::NonModal);     // 设置为非模态
-    window->setWindowIcon(this->windowIcon());
-    window->show();
+    try
+    {
+        auto window = new PaperEyeTrackerWindow();
+        window->setAttribute(Qt::WA_DeleteOnClose);  // 关闭时自动释放内存
+        window->setWindowModality(Qt::NonModal);     // 设置为非模态
+        window->setWindowIcon(this->windowIcon());
+        window->setParent(this, Qt::Window);
+        window->show();
+    } catch (std::exception& e)
+    {
+        QMessageBox::critical(this, tr("错误"), e.what());
+    }
 }
 
 void PaperTrackerMainWindow::onUpdateButtonClicked()

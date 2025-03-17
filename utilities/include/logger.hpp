@@ -30,7 +30,9 @@ inline const static std::unordered_map<LogLevel, std::string> log_level_name {
     {error, "ERROR"}
 };
 
-void init_logger(QPlainTextEdit* log_window);
+void append_log_window(QPlainTextEdit* log_window);
+
+void remove_log_window(QPlainTextEdit* log_window);
 
 template<class T>
 struct with_source_location {
@@ -83,19 +85,21 @@ public:
             msg
         );
 #endif
-
-        if (pthis->log_window->document()->blockCount() > 1000)
-        {
-            // 清空日志窗口
-            QMetaObject::invokeMethod(pthis->log_window, "clear",
-                          Qt::QueuedConnection);
-        }
-
         QString log_message = QObject::tr(QString::fromStdString(message).toUtf8().constData());
-        if (level != debug)
+        for (auto log_window : pthis->log_windows)
         {
-            QMetaObject::invokeMethod(pthis->log_window, "appendPlainText",
-                          Qt::QueuedConnection, Q_ARG(QString, log_message));
+            if (log_window->document()->blockCount() > 1000)
+            {
+                // 清空日志窗口
+                QMetaObject::invokeMethod(log_window, "clear",
+                              Qt::QueuedConnection);
+            }
+
+            if (level != debug)
+            {
+                QMetaObject::invokeMethod(log_window, "appendPlainText",
+                              Qt::QueuedConnection, Q_ARG(QString, log_message));
+            }
         }
 #ifdef DEBUG
         std::cout << log_message.toStdString() << std::endl;
@@ -103,15 +107,17 @@ public:
     }
 
 private:
-    explicit Logger(QPlainTextEdit* log_window) : log_window(log_window) {}
+    Logger() = default;
 
     ~Logger() = default;
 
-    inline static Logger* pthis;
+    static Logger* pthis;
 
-    friend void init_logger(QPlainTextEdit* log_window);
+    friend void append_log_window(QPlainTextEdit* log_window);
 
-    QPlainTextEdit* log_window;
+    friend void remove_log_window(QPlainTextEdit* log_window);
+
+    std::vector<QPlainTextEdit*> log_windows;
     std::mutex log_mutex;
 };
 

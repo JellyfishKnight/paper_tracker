@@ -799,19 +799,6 @@
       </widget>
      </widget>
     </widget>
-    <widget class="QPushButton" name="SaveParamConfigButton">
-     <property name="geometry">
-      <rect>
-       <x>510</x>
-       <y>30</y>
-       <width>131</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>保存参数</string>
-     </property>
-    </widget>
     <widget class="QLabel" name="ImageLabelCal">
      <property name="geometry">
       <rect>
@@ -864,19 +851,6 @@
       <string>x1</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="CheckFirmwareVersionButton">
-     <property name="geometry">
-      <rect>
-       <x>510</x>
-       <y>80</y>
-       <width>131</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>检查固件更新</string>
-     </property>
-    </widget>
    </widget>
   </widget>
   <widget class="QPushButton" name="MainPageButton">
@@ -910,7 +884,7 @@
     <rect>
      <x>310</x>
      <y>10</y>
-     <width>81</width>
+     <width>101</width>
      <height>31</height>
     </rect>
    </property>
@@ -922,7 +896,7 @@
     </font>
    </property>
    <property name="text">
-    <string>wifi未连接</string>
+    <string>面捕wifi未连接</string>
    </property>
    <property name="textInteractionFlags">
     <set>Qt::TextInteractionFlag::NoTextInteraction</set>
@@ -931,7 +905,7 @@
   <widget class="QLabel" name="SerialConnectLabel">
    <property name="geometry">
     <rect>
-     <x>400</x>
+     <x>440</x>
      <y>10</y>
      <width>131</width>
      <height>31</height>
@@ -949,7 +923,7 @@
     <cursorShape>ArrowCursor</cursorShape>
    </property>
    <property name="text">
-    <string>数据线未连接</string>
+    <string>面捕数据线未连接</string>
    </property>
    <property name="textFormat">
     <enum>Qt::TextFormat::AutoText</enum>

@@ -75,7 +75,11 @@ void HttpServer::updateFrame(const cv::Mat &frame) {
     jpegBuffer = createJpegFromFrame(currentFrame);
 
     // 发送给所有客户端
-    QMetaObject::invokeMethod(this, "sendFrame", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, [this] ()
+    {
+        sendFrame();
+    }, Qt::QueuedConnection);
+    // QMetaObject::invokeMethod(this, "sendFrame", Qt::QueuedConnection);
 }
 
 void HttpServer::newConnection() {
