@@ -1,11 +1,11 @@
 //
 // Created by JellyfishKnight on 25-3-11.
 //
-#include "paper_eye_tracker_window.hpp"
+#include "eye_tracker_window.hpp"
 
 #include <QMessageBox>
 
-#include "ui_paper_eye_tracker_window.h"
+#include "ui_eye_tracker_window.h"
 
 
 PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWidget *parent) :
@@ -204,7 +204,7 @@ void PaperEyeTrackerWindow::create_sub_thread()
             }
             auto end_time = std::chrono::high_resolution_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count ();
-            int delay_ms = max(0, static_cast<int>(1000.0 / min(get_max_fps() + 30, 50) - elapsed));
+            int delay_ms = std::max(0, static_cast<int>(1000.0 / std::min(get_max_fps() + 30, 50) - elapsed));
             // LOG_DEBUG("UIFPS:" +  std::to_string(min(get_max_fps() + 30, 60)));
             std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
         }

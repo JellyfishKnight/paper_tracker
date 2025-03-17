@@ -6,12 +6,12 @@
 #define PAPER_TRACKER_MAIN_WINDOW_HPP
 
 #include <config_writer.hpp>
-#include <paper_eye_tracker_window.hpp>
-#include <paper_face_tracker_window.hpp>
+#include <eye_tracker_window.hpp>
+#include <face_tracker_window.hpp>
 #include <QWidget>
 #include <updater.hpp>
 
-#include "ui_paper_tracker_main_window.h"
+#include "ui_main_window.h"
 
 struct PaperTrackerConfig
 {

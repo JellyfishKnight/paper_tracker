@@ -19,8 +19,8 @@
  */
 
 #include <opencv2/imgproc.hpp>
-#include "paper_face_tracker_window.hpp"
-#include "ui_paper_face_tracker_window.h"
+#include "face_tracker_window.hpp"
+#include "ui_face_tracker_window.h"
 #include <QMessageBox>
 #include <codecvt>
 #include <locale>

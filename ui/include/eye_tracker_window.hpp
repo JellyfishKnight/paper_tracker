@@ -5,7 +5,7 @@
 #ifndef PAPER_EYE_TRACKER_WINDOW_HPP
 #define PAPER_EYE_TRACKER_WINDOW_HPP
 
-#include "ui_paper_eye_tracker_window.h"
+#include "ui_eye_tracker_window.h"
 #include "serial.hpp"
 #include "image_downloader.hpp"
 #include "osc.hpp"

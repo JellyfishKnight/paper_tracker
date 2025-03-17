@@ -15,7 +15,7 @@
 #include <osc.hpp>
 #include <QTimer>
 
-#include "ui_paper_face_tracker_window.h"
+#include "ui_face_tracker_window.h"
 #include "inference.hpp"
 #include "serial.hpp"
 #include "logger.hpp"

@@ -4,14 +4,14 @@
 
 // You may need to build the project (run Qt uic code generator) to get "ui_paper_tracker_main_window.h" resolved
 
-#include "paper_tracker_main_window.hpp"
+#include "main_window.hpp"
 
-#include <paper_eye_tracker_window.hpp>
-#include <paper_face_tracker_window.hpp>
+#include <eye_tracker_window.hpp>
+#include <face_tracker_window.hpp>
 #include <QFile>
 #include <QTimer>
 
-#include "ui_paper_tracker_main_window.h"
+#include "ui_main_window.h"
 
 
 PaperTrackerMainWindow::PaperTrackerMainWindow(QWidget *parent) :
