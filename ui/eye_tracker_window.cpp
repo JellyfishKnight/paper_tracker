@@ -237,7 +237,7 @@ void PaperEyeTrackerWindow::create_sub_thread()
                 cv::Mat show_image;
                 if (!frame.empty())
                 {
-                    left_http_server_->updateFrame(frame);
+                    right_http_server_->updateFrame(frame);
                     show_image = frame;
                 }
                 setVideoImage(RIGHT_TAG, show_image);
