@@ -47,7 +47,8 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWid
     serial_port_->registerCallback(
         PACKET_DEVICE_STATUS,
         [this](const std::string& ip, int brightness, int power, int version) {
-            if (version != 2 && version != 3)
+            current_esp32_version = version;
+            if (version != LEFT_TAG && version != RIGHT_TAG)
             {
                 static bool version_warning = false;
                 if (!version_warning)
@@ -62,23 +63,23 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWid
             }
             // 使用Qt的线程安全方式更新UI
             QMetaObject::invokeMethod(this, [ip, brightness, power, version, this]() {
-                if (version == 2)
+                if (version == LEFT_TAG)
                 {
                     if (current_left_ip != "http://" + ip)
                     {
                         current_left_ip = "http://" + ip;
                         // 更新IP地址显示，添加 http:// 前缀
-                        this->setLeftIPText(QString::fromStdString(current_left_ip));
+                        this->setIPText(LEFT_TAG, QString::fromStdString(current_left_ip));
                         LOG_INFO("IP地址已更新: {}", current_left_ip);
                         start_image_download(version);
                     }
-                } else if (version == 3)
+                } else if (version == RIGHT_TAG)
                 {
                     if (current_right_ip != "http://" + ip)
                     {
                         current_right_ip = "http://" + ip;
                         // 更新IP地址显示，添加 http:// 前缀
-                        this->setLeftIPText(QString::fromStdString(current_right_ip));
+                        this->setIPText(RIGHT_TAG, QString::fromStdString(current_right_ip));
                         LOG_INFO("IP地址已更新: {}", current_right_ip);
                         start_image_download(version);
                     }
@@ -123,7 +124,7 @@ void PaperEyeTrackerWindow::create_sub_thread()
         while (is_running())
         {
             updateWifiLabel(LEFT_TAG);
-            updateSerialLabel(LEFT_TAG);
+            updateSerialLabel(current_esp32_version);
             auto start_time = std::chrono::high_resolution_clock::now();
             try {
                 if (fps_total > 1000)
@@ -171,7 +172,7 @@ void PaperEyeTrackerWindow::create_sub_thread()
         while (is_running())
         {
             updateWifiLabel(RIGHT_TAG);
-            updateSerialLabel(RIGHT_TAG);
+            updateSerialLabel(current_esp32_version);
             auto start_time = std::chrono::high_resolution_clock::now();
             try {
                 if (fps_total > 1000)
@@ -272,27 +273,27 @@ void PaperEyeTrackerWindow::onSendButtonClicked()
 
 void PaperEyeTrackerWindow::onRestartButtonClicked()
 {
-    if (current_esp32_version == 1)
+    if (current_esp32_version == FACE_TAG)
     {
         QMessageBox::information(this, "错误", "插入的是面捕设备，请到面捕界面操作");
         return;
     }
     serial_port_->stop_heartbeat_timer();
-    if (current_esp32_version == 2)
+    if (current_esp32_version == LEFT_TAG)
     {
         left_image_stream->stop_heartbeat_timer();
-    } else if (current_esp32_version == 3)
+    } else if (current_esp32_version == RIGHT_TAG)
     {
         right_image_stream->stop_heartbeat_timer();
     }
     serial_port_->restartESP32(this);
     serial_port_->start_heartbeat_timer();
-    if (current_esp32_version == 2)
+    if (current_esp32_version == LEFT_TAG)
     {
         left_image_stream->stop();
         left_image_stream->start();
         left_image_stream->start_heartbeat_timer();
-    } else if (current_esp32_version == 3)
+    } else if (current_esp32_version == RIGHT_TAG)
     {
         right_image_stream->stop();
         right_image_stream->start();
@@ -302,27 +303,27 @@ void PaperEyeTrackerWindow::onRestartButtonClicked()
 
 void PaperEyeTrackerWindow::onFlashButtonClicked()
 {
-    if (current_esp32_version == 1)
+    if (current_esp32_version == FACE_TAG)
     {
         QMessageBox::information(this, "错误", "插入的是面捕设备，请到面捕界面操作");
         return;
     }
     serial_port_->stop_heartbeat_timer();
-    if (current_esp32_version == 2)
+    if (current_esp32_version == LEFT_TAG)
     {
         left_image_stream->stop_heartbeat_timer();
-    } else if (current_esp32_version == 3)
+    } else if (current_esp32_version == RIGHT_TAG)
     {
         right_image_stream->stop_heartbeat_timer();
     }
     serial_port_->flashESP32(this);
     serial_port_->start_heartbeat_timer();
-    if (current_esp32_version == 2)
+    if (current_esp32_version == LEFT_TAG)
     {
         left_image_stream->stop();
         left_image_stream->start();
         left_image_stream->start_heartbeat_timer();
-    } else if (current_esp32_version == 3)
+    } else if (current_esp32_version == RIGHT_TAG)
     {
         right_image_stream->stop();
         right_image_stream->start();
@@ -363,15 +364,17 @@ void PaperEyeTrackerWindow::set_config()
 
 }
 
-void PaperEyeTrackerWindow::setLeftIPText(const QString& text) const
+void PaperEyeTrackerWindow::setIPText(int version, const QString& text) const
 {
-    ui.LeftEyeIPAddress->setPlainText(tr(text.toUtf8().constData()));
+    if (version == LEFT_TAG)
+    {
+        ui.LeftEyeIPAddress->setPlainText(tr(text.toUtf8().constData()));
+    } else
+    {
+        ui.RightEyeIPAddress->setPlainText(tr(text.toUtf8().constData()));
+    }
 }
 
-void PaperEyeTrackerWindow::setRightIPText(const QString& text) const
-{
-    ui.RightEyeIPAddress->setPlainText(tr(text.toUtf8().constData()));
-}
 
 void PaperEyeTrackerWindow::start_image_download(int version) const
 {
@@ -418,25 +421,68 @@ void PaperEyeTrackerWindow::updateWifiLabel(int version) const
 {
     if (version == LEFT_TAG)
     {
-        ui.LeftEyeWifiStatus->setText(tr("左眼Wifi已连接"));
+        if (left_image_stream->isStreaming())
+        {
+            setWifiStatusLabel(version, "左眼Wifi已连接");
+        } else
+        {
+            setWifiStatusLabel(version, "左眼Wifi连接失败");
+        }
     } else if (version == RIGHT_TAG)
     {
-        ui.RightEyeWifiStatus->setText(tr("右眼Wifi已连接"));
+        if (right_image_stream->isStreaming())
+        {
+            setWifiStatusLabel(version, "右眼Wifi已连接");
+        } else
+        {
+            setWifiStatusLabel(version, "右眼Wifi连接失败");
+        }
     }
 }
 
 void PaperEyeTrackerWindow::updateSerialLabel(int version) const
 {
-    if (version == LEFT_TAG)
+    if (serial_port_->status() == SerialStatus::OPENED)
     {
-        ui.EyeWindowSerialStatus->setText(tr("左眼设备已连接"));
-    } else if (version == RIGHT_TAG)
+        if (version == LEFT_TAG)
+        {
+            setSerialStatusLabel("左眼设备已连接");
+        } else if (version == RIGHT_TAG)
+        {
+            setSerialStatusLabel("右眼设备已连接");
+        }
+    } else
     {
-        ui.EyeWindowSerialStatus->setText(tr("右眼设备已连接"));
+        setSerialStatusLabel("没有设备连接");
     }
 }
 
 cv::Mat PaperEyeTrackerWindow::getVideoImage(int version) const
 {
+    if (version == LEFT_TAG)
+    {
+        return std::move(left_image_stream->getLatestFrame());
+    } else if (version == RIGHT_TAG)
+    {
+        return std::move(right_image_stream->getLatestFrame());
+    } else
+    {
+        return {};
+    }
+}
 
+void PaperEyeTrackerWindow::setSerialStatusLabel(const QString& text) const
+{
+    ui.EyeWindowSerialStatus->setText(text);
+}
+
+void PaperEyeTrackerWindow::setWifiStatusLabel(int version, const QString& text) const
+{
+    if (version == LEFT_TAG)
+    {
+        ui.LeftEyeWifiStatus->setText(text.toUtf8().constData());
+    } else if (version == RIGHT_TAG)
+    {
+        ui.RightEyeWifiStatus->setText(text.toUtf8().constData());
+    }
 }

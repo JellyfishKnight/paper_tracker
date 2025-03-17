@@ -13,6 +13,7 @@
 #include <QTimer>
 #include "config_writer.hpp"
 
+#define FACE_TAG 1
 #define LEFT_TAG 2
 #define RIGHT_TAG 3
 
@@ -34,9 +35,10 @@ public:
     bool is_running() const;
 
     void set_config();
-    void setLeftIPText(const QString& text) const;
-    void setRightIPText(const QString& text) const;
+    void setIPText(int version, const QString& text) const;
     void start_image_download(int version) const;
+    void setSerialStatusLabel(const QString& text) const;
+    void setWifiStatusLabel(int version, const QString& text) const;
 
     void setVideoImage(int version, const cv::Mat& image);
     void updateWifiLabel(int version) const;

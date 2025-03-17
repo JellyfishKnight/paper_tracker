@@ -10,8 +10,6 @@
 #include <QMutex>
 
 class HttpServer : public QObject {
-    Q_OBJECT
-
 public:
     explicit HttpServer(QObject *parent = nullptr);
     ~HttpServer();
