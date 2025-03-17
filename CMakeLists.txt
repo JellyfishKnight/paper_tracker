@@ -94,23 +94,23 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/3rdParty/oscpack
 )
 
-############### inference ################
+############### algorithm ################
 add_library(
-    inference
-    inference/inference.cpp
-    inference/kalman_fliter.cpp
+    algorithm
+    algorithm/inference.cpp
+    algorithm/kalman_fliter.cpp
 )
 
 target_include_directories(
-    inference
+    algorithm
     PUBLIC
-    inference/include
+    algorithm/include
     ${OpenCV_INCLUDE_DIRS}
     ${ONNXRUNTIME_ROOT}/include
 )
 
 target_link_libraries(
-    inference
+    algorithm
     PUBLIC
     ${OpenCV_LIBS}
     onnxruntime
@@ -178,7 +178,7 @@ target_link_libraries(
     onnxruntime
     oscpack
     transfer
-    inference
+    algorithm
     CURL::libcurl
     utilities
 )
@@ -219,7 +219,7 @@ target_link_libraries(PaperTracker PRIVATE
     User32
     utilities
     ui
-    inference
+    algorithm
     transfer
 )
 

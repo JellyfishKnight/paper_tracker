@@ -6,103 +6,268 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>883</width>
-    <height>596</height>
+    <width>907</width>
+    <height>614</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>PaperEyeTrackerWindow</string>
   </property>
-  <widget class="QLabel" name="LeftEyeImage">
+  <widget class="QStackedWidget" name="stackedWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>40</y>
+     <width>901</width>
+     <height>571</height>
+    </rect>
+   </property>
+   <widget class="QWidget" name="page">
+    <widget class="QPlainTextEdit" name="RightEyeIPAddress">
+     <property name="geometry">
+      <rect>
+       <x>530</x>
+       <y>340</y>
+       <width>201</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>350</y>
+       <width>54</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>右眼IP</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="LeftEyeIPAddress">
+     <property name="geometry">
+      <rect>
+       <x>530</x>
+       <y>290</y>
+       <width>201</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="EnergyModelBox">
+     <property name="geometry">
+      <rect>
+       <x>800</x>
+       <y>300</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>普通模式</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>节能模式</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>性能模式</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QPlainTextEdit" name="LogText">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>400</y>
+       <width>721</width>
+       <height>151</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="LeftEyeImage">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>5</y>
+       <width>261</width>
+       <height>261</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>                          没有图像输入</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="ResultImageLabel">
+     <property name="geometry">
+      <rect>
+       <x>550</x>
+       <y>5</y>
+       <width>261</width>
+       <height>261</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>                          没有图像输入</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="RestartButton">
+     <property name="geometry">
+      <rect>
+       <x>330</x>
+       <y>290</y>
+       <width>111</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>重启</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>300</y>
+       <width>54</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>左眼IP</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="PassWordInput">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>340</y>
+       <width>171</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="SSIDInput">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>290</y>
+       <width>171</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="RightEyeImage">
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>5</y>
+       <width>261</width>
+       <height>261</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>                          没有图像输入</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>740</x>
+       <y>300</y>
+       <width>51</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>模式选择</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="FlashButton">
+     <property name="geometry">
+      <rect>
+       <x>330</x>
+       <y>340</y>
+       <width>111</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>刷写固件</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="SendButton">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>290</y>
+       <width>101</width>
+       <height>91</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>发送</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="page_2"/>
+  </widget>
+  <widget class="QPushButton" name="MainPageButton">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>261</width>
-     <height>261</height>
+     <width>75</width>
+     <height>24</height>
     </rect>
    </property>
    <property name="text">
-    <string>                          没有图像输入</string>
+    <string>主页面</string>
    </property>
   </widget>
-  <widget class="QLabel" name="RightEyeImage">
+  <widget class="QPushButton" name="SettingButton">
    <property name="geometry">
     <rect>
-     <x>310</x>
+     <x>120</x>
      <y>10</y>
-     <width>261</width>
-     <height>261</height>
+     <width>75</width>
+     <height>24</height>
     </rect>
    </property>
    <property name="text">
-    <string>                          没有图像输入</string>
+    <string>设置</string>
    </property>
   </widget>
-  <widget class="QPlainTextEdit" name="SSIDInput">
+  <widget class="QLabel" name="RightEyeWifiStatus">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>320</y>
-     <width>171</width>
-     <height>41</height>
+     <x>680</x>
+     <y>10</y>
+     <width>161</width>
+     <height>31</height>
     </rect>
    </property>
-  </widget>
-  <widget class="QPlainTextEdit" name="PassWordInput">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>370</y>
-     <width>171</width>
-     <height>41</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="SendButton">
-   <property name="geometry">
-    <rect>
-     <x>200</x>
-     <y>320</y>
-     <width>101</width>
-     <height>91</height>
-    </rect>
+   <property name="font">
+    <font>
+     <italic>true</italic>
+     <bold>true</bold>
+    </font>
    </property>
    <property name="text">
-    <string>发送</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="RestartButton">
-   <property name="geometry">
-    <rect>
-     <x>320</x>
-     <y>320</y>
-     <width>111</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>重启</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="FlashButton">
-   <property name="geometry">
-    <rect>
-     <x>320</x>
-     <y>370</y>
-     <width>111</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>刷写固件</string>
+    <string>右眼WIFI未连接</string>
    </property>
   </widget>
   <widget class="QLabel" name="EyeWindowSerialStatus">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>285</y>
+     <x>300</x>
+     <y>15</y>
      <width>161</width>
      <height>21</height>
     </rect>
@@ -120,8 +285,8 @@
   <widget class="QLabel" name="LeftEyeWifiStatus">
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>280</y>
+     <x>490</x>
+     <y>10</y>
      <width>161</width>
      <height>31</height>
     </rect>
@@ -134,119 +299,6 @@
    </property>
    <property name="text">
     <string>左眼WIFI未连接</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="RightEyeWifiStatus">
-   <property name="geometry">
-    <rect>
-     <x>390</x>
-     <y>280</y>
-     <width>161</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <italic>true</italic>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>右眼WIFI未连接</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>460</x>
-     <y>330</y>
-     <width>54</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>左眼IP</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>460</x>
-     <y>380</y>
-     <width>54</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>右眼IP</string>
-   </property>
-  </widget>
-  <widget class="QPlainTextEdit" name="LeftEyeIPAddress">
-   <property name="geometry">
-    <rect>
-     <x>520</x>
-     <y>320</y>
-     <width>211</width>
-     <height>41</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPlainTextEdit" name="RightEyeIPAddress">
-   <property name="geometry">
-    <rect>
-     <x>520</x>
-     <y>370</y>
-     <width>211</width>
-     <height>41</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPlainTextEdit" name="LogText">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>430</y>
-     <width>721</width>
-     <height>151</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="EnergyModelBox">
-   <property name="geometry">
-    <rect>
-     <x>660</x>
-     <y>20</y>
-     <width>91</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <item>
-    <property name="text">
-     <string>普通模式</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>节能模式</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>性能模式</string>
-    </property>
-   </item>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>600</x>
-     <y>20</y>
-     <width>51</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>模式选择</string>
    </property>
   </widget>
  </widget>

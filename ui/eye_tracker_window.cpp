@@ -15,7 +15,7 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(QWidget *parent) :
     else
         throw std::exception("当前已经打开了眼追窗口，请不要重复打开");
     ui.setupUi(this);
-    setFixedSize(883, 596);
+    setFixedSize(907, 614);
     append_log_window(ui.LogText);
 
     connect_callbacks();
