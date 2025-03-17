@@ -35,6 +35,7 @@ public:
     QLabel *label_2;
     QPlainTextEdit *LeftEyeIPAddress;
     QPlainTextEdit *RightEyeIPAddress;
+    QPlainTextEdit *LogText;
 
     void setupUi(QWidget *PaperEyeTrackerWindow)
     {
@@ -43,52 +44,55 @@ public:
         PaperEyeTrackerWindow->resize(883, 596);
         LeftEyeImage = new QLabel(PaperEyeTrackerWindow);
         LeftEyeImage->setObjectName("LeftEyeImage");
-        LeftEyeImage->setGeometry(QRect(10, 40, 261, 261));
+        LeftEyeImage->setGeometry(QRect(10, 10, 261, 261));
         RightEyeImage = new QLabel(PaperEyeTrackerWindow);
         RightEyeImage->setObjectName("RightEyeImage");
-        RightEyeImage->setGeometry(QRect(310, 40, 261, 261));
+        RightEyeImage->setGeometry(QRect(310, 10, 261, 261));
         SSIDInput = new QPlainTextEdit(PaperEyeTrackerWindow);
         SSIDInput->setObjectName("SSIDInput");
-        SSIDInput->setGeometry(QRect(10, 370, 171, 41));
+        SSIDInput->setGeometry(QRect(10, 320, 171, 41));
         PassWordInput = new QPlainTextEdit(PaperEyeTrackerWindow);
         PassWordInput->setObjectName("PassWordInput");
-        PassWordInput->setGeometry(QRect(10, 420, 171, 41));
+        PassWordInput->setGeometry(QRect(10, 370, 171, 41));
         SendButton = new QPushButton(PaperEyeTrackerWindow);
         SendButton->setObjectName("SendButton");
-        SendButton->setGeometry(QRect(200, 370, 101, 91));
+        SendButton->setGeometry(QRect(200, 320, 101, 91));
         RestartButton = new QPushButton(PaperEyeTrackerWindow);
         RestartButton->setObjectName("RestartButton");
-        RestartButton->setGeometry(QRect(320, 370, 111, 41));
+        RestartButton->setGeometry(QRect(320, 320, 111, 41));
         FlashButton = new QPushButton(PaperEyeTrackerWindow);
         FlashButton->setObjectName("FlashButton");
-        FlashButton->setGeometry(QRect(320, 420, 111, 41));
+        FlashButton->setGeometry(QRect(320, 370, 111, 41));
         EyeWindowSerialStatus = new QLabel(PaperEyeTrackerWindow);
         EyeWindowSerialStatus->setObjectName("EyeWindowSerialStatus");
-        EyeWindowSerialStatus->setGeometry(QRect(10, 335, 161, 21));
+        EyeWindowSerialStatus->setGeometry(QRect(10, 285, 161, 21));
         QFont font;
         font.setBold(true);
         font.setItalic(true);
         EyeWindowSerialStatus->setFont(font);
         LeftEyeWifiStatus = new QLabel(PaperEyeTrackerWindow);
         LeftEyeWifiStatus->setObjectName("LeftEyeWifiStatus");
-        LeftEyeWifiStatus->setGeometry(QRect(200, 330, 161, 31));
+        LeftEyeWifiStatus->setGeometry(QRect(200, 280, 161, 31));
         LeftEyeWifiStatus->setFont(font);
         RightEyeWifiStatus = new QLabel(PaperEyeTrackerWindow);
         RightEyeWifiStatus->setObjectName("RightEyeWifiStatus");
-        RightEyeWifiStatus->setGeometry(QRect(390, 330, 161, 31));
+        RightEyeWifiStatus->setGeometry(QRect(390, 280, 161, 31));
         RightEyeWifiStatus->setFont(font);
         label = new QLabel(PaperEyeTrackerWindow);
         label->setObjectName("label");
-        label->setGeometry(QRect(460, 380, 54, 16));
+        label->setGeometry(QRect(460, 330, 54, 16));
         label_2 = new QLabel(PaperEyeTrackerWindow);
         label_2->setObjectName("label_2");
-        label_2->setGeometry(QRect(460, 430, 54, 16));
+        label_2->setGeometry(QRect(460, 380, 54, 16));
         LeftEyeIPAddress = new QPlainTextEdit(PaperEyeTrackerWindow);
         LeftEyeIPAddress->setObjectName("LeftEyeIPAddress");
-        LeftEyeIPAddress->setGeometry(QRect(520, 370, 211, 41));
+        LeftEyeIPAddress->setGeometry(QRect(520, 320, 211, 41));
         RightEyeIPAddress = new QPlainTextEdit(PaperEyeTrackerWindow);
         RightEyeIPAddress->setObjectName("RightEyeIPAddress");
-        RightEyeIPAddress->setGeometry(QRect(520, 420, 211, 41));
+        RightEyeIPAddress->setGeometry(QRect(520, 370, 211, 41));
+        LogText = new QPlainTextEdit(PaperEyeTrackerWindow);
+        LogText->setObjectName("LogText");
+        LogText->setGeometry(QRect(10, 430, 721, 151));
 
         retranslateUi(PaperEyeTrackerWindow);
 

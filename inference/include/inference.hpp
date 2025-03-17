@@ -111,9 +111,9 @@ private:
     std::vector<float> filtered_data;  // 存储滤波后数据
     int max_points = 200;        // 只保留最近 200 个点，防止图像过长
 
-    float dt = 0.02;
-    float q_factor = 5e-1;
-    float r_factor = 5e-5;
+    float dt = 0.02f;
+    float q_factor = 5e-1f;
+    float r_factor = 5e-5f;
 };
 
 #endif //BABBLE_INFERENCE_HPP

@@ -16,6 +16,7 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWid
         throw std::exception("当前已经打开了眼追窗口，请不要重复打开");
     ui.setupUi(this);
     setFixedSize(883, 596);
+    append_log_window(ui.LogText);
 
     connect_callbacks();
     // 添加输入框焦点事件处理
@@ -46,7 +47,7 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(PaperEyeTrackerConfig* config, QWid
     serial_port_->registerCallback(
         PACKET_DEVICE_STATUS,
         [this](const std::string& ip, int brightness, int power, int version) {
-            if (version != 2 || version != 3)
+            if (version != 2 && version != 3)
             {
                 static bool version_warning = false;
                 if (!version_warning)
@@ -114,6 +115,8 @@ PaperEyeTrackerWindow::~PaperEyeTrackerWindow() {
     }
     osc_manager->close();
     LOG_INFO("系统已安全关闭");
+    remove_log_window(ui.LogText);
+    instance = nullptr;
 }
 
 void PaperEyeTrackerWindow::onSendButtonClicked()

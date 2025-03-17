@@ -135,7 +135,7 @@ private slots:
     void onTongueOutChanged(int value);
     void onTongueLeftChanged(int value);
     void onTongueRightChanged(int value);
-    void onTongueUpChanged(int value);
+    void onTongueUpChanged(int value) const;
     void onTongueDownChanged(int value) const;
 private:
     void start_image_download() const;

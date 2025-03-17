@@ -41,7 +41,7 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(PaperFaceTrackerConfig* config, Q
     setFixedSize(848, 538);
     ui.setupUi(this);
     ui.LogText->setMaximumBlockCount(200);
-    init_logger(ui.LogText);
+    append_log_window(ui.LogText);
     LOG_INFO("系统初始化中...");
     // 初始化串口连接状态
     ui.SerialConnectLabel->setText(tr("有线模式未连接"));
@@ -248,6 +248,8 @@ PaperFaceTrackerWindow::~PaperFaceTrackerWindow() {
     stop();
     *config = generate_config();
     LOG_INFO("正在关闭VRCFT");
+    remove_log_window(ui.LogText);
+    instance = nullptr;
 }
 
 void PaperFaceTrackerWindow::bound_pages() {
@@ -685,7 +687,7 @@ void PaperFaceTrackerWindow::onTongueRightChanged(int value)
     inference->set_amp_map(getAmpMap());
 }
 
-void PaperFaceTrackerWindow::onTongueUpChanged(int value)
+void PaperFaceTrackerWindow::onTongueUpChanged(int value) const
 {
     inference->set_amp_map(getAmpMap());
 }
