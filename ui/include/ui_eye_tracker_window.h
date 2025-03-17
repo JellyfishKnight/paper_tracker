@@ -11,6 +11,7 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QPushButton>
@@ -36,6 +37,8 @@ public:
     QPlainTextEdit *LeftEyeIPAddress;
     QPlainTextEdit *RightEyeIPAddress;
     QPlainTextEdit *LogText;
+    QComboBox *EnergyModelBox;
+    QLabel *label_3;
 
     void setupUi(QWidget *PaperEyeTrackerWindow)
     {
@@ -93,6 +96,15 @@ public:
         LogText = new QPlainTextEdit(PaperEyeTrackerWindow);
         LogText->setObjectName("LogText");
         LogText->setGeometry(QRect(10, 430, 721, 151));
+        EnergyModelBox = new QComboBox(PaperEyeTrackerWindow);
+        EnergyModelBox->addItem(QString());
+        EnergyModelBox->addItem(QString());
+        EnergyModelBox->addItem(QString());
+        EnergyModelBox->setObjectName("EnergyModelBox");
+        EnergyModelBox->setGeometry(QRect(660, 20, 91, 31));
+        label_3 = new QLabel(PaperEyeTrackerWindow);
+        label_3->setObjectName("label_3");
+        label_3->setGeometry(QRect(600, 20, 51, 31));
 
         retranslateUi(PaperEyeTrackerWindow);
 
@@ -112,6 +124,11 @@ public:
         RightEyeWifiStatus->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\217\263\347\234\274WIFI\346\234\252\350\277\236\346\216\245", nullptr));
         label->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\267\246\347\234\274IP", nullptr));
         label_2->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\217\263\347\234\274IP", nullptr));
+        EnergyModelBox->setItemText(0, QCoreApplication::translate("PaperEyeTrackerWindow", "\346\231\256\351\200\232\346\250\241\345\274\217", nullptr));
+        EnergyModelBox->setItemText(1, QCoreApplication::translate("PaperEyeTrackerWindow", "\350\212\202\350\203\275\346\250\241\345\274\217", nullptr));
+        EnergyModelBox->setItemText(2, QCoreApplication::translate("PaperEyeTrackerWindow", "\346\200\247\350\203\275\346\250\241\345\274\217", nullptr));
+
+        label_3->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\346\250\241\345\274\217\351\200\211\346\213\251", nullptr));
     } // retranslateUi
 
 };

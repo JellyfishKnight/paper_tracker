@@ -52,6 +52,8 @@ private slots:
     void onRestartButtonClicked();
     void onFlashButtonClicked();
 
+    void onEnergyModeChanged(int index);
+
 private:
     void connect_callbacks();
 

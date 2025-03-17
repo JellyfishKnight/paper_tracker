@@ -391,6 +391,7 @@ void PaperEyeTrackerWindow::connect_callbacks()
     connect(ui.SendButton, &QPushButton::clicked, this, &PaperEyeTrackerWindow::onSendButtonClicked);
     connect(ui.RestartButton, &QPushButton::clicked, this, &PaperEyeTrackerWindow::onRestartButtonClicked);
     connect(ui.FlashButton, &QPushButton::clicked, this, &PaperEyeTrackerWindow::onFlashButtonClicked);
+    connect(ui.EnergyModelBox, &QComboBox::currentIndexChanged, this, &PaperEyeTrackerWindow::onEnergyModeChanged);
 }
 
 
@@ -549,4 +550,18 @@ PaperEyeTrackerConfig PaperEyeTrackerWindow::generate_config() const
     res_config.left_ip = ui.LeftEyeIPAddress->toPlainText().toStdString();
     res_config.right_ip = ui.RightEyeIPAddress->toPlainText().toStdString();
     return res_config;
+}
+
+void PaperEyeTrackerWindow::onEnergyModeChanged(int index)
+{
+    if (index == 0)
+    {
+        max_fps = 38;
+    } else if (index == 1)
+    {
+        max_fps = 15;
+    } else if (index == 2)
+    {
+        max_fps = 70;
+    }
 }
