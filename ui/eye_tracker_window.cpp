@@ -128,6 +128,34 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(QWidget *parent) :
         }
     } else
     {
+        if (current_left_ip.empty() && !config.left_ip.empty())
+        {
+            current_left_ip = config.left_ip;
+            start_image_download(LEFT_TAG);
+        } else
+        {
+            if (config.left_ip.empty())
+            {
+                QMessageBox msgBox;
+                msgBox.setWindowIcon(this->windowIcon());
+                msgBox.setText(tr("未找到左眼配置文件信息，请将设备通过数据线连接到电脑进行首次配置"));
+                msgBox.exec();
+            }
+        }
+        if (current_right_ip.empty() && !config.right_ip.empty())
+        {
+            current_right_ip = config.right_ip;
+            start_image_download(RIGHT_TAG);
+        } else
+        {
+            if (config.right_ip.empty())
+            {
+                QMessageBox msgBox;
+                msgBox.setWindowIcon(this->windowIcon());
+                msgBox.setText(tr("未找到右眼配置文件信息，请将设备通过数据线连接到电脑进行首次配置"));
+                msgBox.exec();
+            }
+        }
         LOG_INFO("有线模式面捕连接成功");
         setSerialStatusLabel("有线模式面捕连接成功");
     }
