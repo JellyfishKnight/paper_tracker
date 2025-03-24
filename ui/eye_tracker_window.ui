@@ -22,6 +22,9 @@
      <height>571</height>
     </rect>
    </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
    <widget class="QWidget" name="page">
     <widget class="QPlainTextEdit" name="RightEyeIPAddress">
      <property name="geometry">
@@ -95,19 +98,6 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>5</y>
-       <width>261</width>
-       <height>261</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>                          没有图像输入</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="ResultImageLabel">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
        <y>5</y>
        <width>261</width>
        <height>261</height>
@@ -215,8 +205,84 @@
       <string>发送</string>
      </property>
     </widget>
+    <widget class="QScrollBar" name="LeftBrightnessBar">
+     <property name="geometry">
+      <rect>
+       <x>660</x>
+       <y>40</y>
+       <width>231</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QScrollBar" name="RightBrightnessBar">
+     <property name="geometry">
+      <rect>
+       <x>660</x>
+       <y>80</y>
+       <width>231</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>580</x>
+       <y>35</y>
+       <width>54</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>左眼补光</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>580</x>
+       <y>80</y>
+       <width>54</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>右眼补光</string>
+     </property>
+    </widget>
    </widget>
-   <widget class="QWidget" name="page_2"/>
+   <widget class="QWidget" name="page_2">
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>140</y>
+       <width>571</width>
+       <height>281</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>30</pointsize>
+       <italic>true</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>施工中，敬请期待</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QPushButton" name="MainPageButton">
    <property name="geometry">

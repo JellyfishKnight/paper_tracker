@@ -15,6 +15,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QWidget>
 
@@ -31,7 +32,6 @@ public:
     QComboBox *EnergyModelBox;
     QPlainTextEdit *LogText;
     QLabel *LeftEyeImage;
-    QLabel *ResultImageLabel;
     QPushButton *RestartButton;
     QLabel *label;
     QPlainTextEdit *PassWordInput;
@@ -40,7 +40,12 @@ public:
     QLabel *label_3;
     QPushButton *FlashButton;
     QPushButton *SendButton;
+    QScrollBar *LeftBrightnessBar;
+    QScrollBar *RightBrightnessBar;
+    QLabel *label_4;
+    QLabel *label_5;
     QWidget *page_2;
+    QLabel *label_6;
     QPushButton *MainPageButton;
     QPushButton *SettingButton;
     QLabel *RightEyeWifiStatus;
@@ -78,9 +83,6 @@ public:
         LeftEyeImage = new QLabel(page);
         LeftEyeImage->setObjectName("LeftEyeImage");
         LeftEyeImage->setGeometry(QRect(10, 5, 261, 261));
-        ResultImageLabel = new QLabel(page);
-        ResultImageLabel->setObjectName("ResultImageLabel");
-        ResultImageLabel->setGeometry(QRect(550, 5, 261, 261));
         RestartButton = new QPushButton(page);
         RestartButton->setObjectName("RestartButton");
         RestartButton->setGeometry(QRect(330, 290, 111, 41));
@@ -105,9 +107,32 @@ public:
         SendButton = new QPushButton(page);
         SendButton->setObjectName("SendButton");
         SendButton->setGeometry(QRect(210, 290, 101, 91));
+        LeftBrightnessBar = new QScrollBar(page);
+        LeftBrightnessBar->setObjectName("LeftBrightnessBar");
+        LeftBrightnessBar->setGeometry(QRect(660, 40, 231, 21));
+        LeftBrightnessBar->setOrientation(Qt::Orientation::Horizontal);
+        RightBrightnessBar = new QScrollBar(page);
+        RightBrightnessBar->setObjectName("RightBrightnessBar");
+        RightBrightnessBar->setGeometry(QRect(660, 80, 231, 21));
+        RightBrightnessBar->setOrientation(Qt::Orientation::Horizontal);
+        label_4 = new QLabel(page);
+        label_4->setObjectName("label_4");
+        label_4->setGeometry(QRect(580, 35, 54, 31));
+        label_5 = new QLabel(page);
+        label_5->setObjectName("label_5");
+        label_5->setGeometry(QRect(580, 80, 54, 21));
         stackedWidget->addWidget(page);
         page_2 = new QWidget();
         page_2->setObjectName("page_2");
+        label_6 = new QLabel(page_2);
+        label_6->setObjectName("label_6");
+        label_6->setGeometry(QRect(160, 140, 571, 281));
+        QFont font;
+        font.setPointSize(30);
+        font.setBold(true);
+        font.setItalic(true);
+        label_6->setFont(font);
+        label_6->setAlignment(Qt::AlignmentFlag::AlignCenter);
         stackedWidget->addWidget(page_2);
         MainPageButton = new QPushButton(PaperEyeTrackerWindow);
         MainPageButton->setObjectName("MainPageButton");
@@ -118,20 +143,23 @@ public:
         RightEyeWifiStatus = new QLabel(PaperEyeTrackerWindow);
         RightEyeWifiStatus->setObjectName("RightEyeWifiStatus");
         RightEyeWifiStatus->setGeometry(QRect(680, 10, 161, 31));
-        QFont font;
-        font.setBold(true);
-        font.setItalic(true);
-        RightEyeWifiStatus->setFont(font);
+        QFont font1;
+        font1.setBold(true);
+        font1.setItalic(true);
+        RightEyeWifiStatus->setFont(font1);
         EyeWindowSerialStatus = new QLabel(PaperEyeTrackerWindow);
         EyeWindowSerialStatus->setObjectName("EyeWindowSerialStatus");
         EyeWindowSerialStatus->setGeometry(QRect(300, 15, 161, 21));
-        EyeWindowSerialStatus->setFont(font);
+        EyeWindowSerialStatus->setFont(font1);
         LeftEyeWifiStatus = new QLabel(PaperEyeTrackerWindow);
         LeftEyeWifiStatus->setObjectName("LeftEyeWifiStatus");
         LeftEyeWifiStatus->setGeometry(QRect(490, 10, 161, 31));
-        LeftEyeWifiStatus->setFont(font);
+        LeftEyeWifiStatus->setFont(font1);
 
         retranslateUi(PaperEyeTrackerWindow);
+
+        stackedWidget->setCurrentIndex(0);
+
 
         QMetaObject::connectSlotsByName(PaperEyeTrackerWindow);
     } // setupUi
@@ -145,13 +173,15 @@ public:
         EnergyModelBox->setItemText(2, QCoreApplication::translate("PaperEyeTrackerWindow", "\346\200\247\350\203\275\346\250\241\345\274\217", nullptr));
 
         LeftEyeImage->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "                          \346\262\241\346\234\211\345\233\276\345\203\217\350\276\223\345\205\245", nullptr));
-        ResultImageLabel->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "                          \346\262\241\346\234\211\345\233\276\345\203\217\350\276\223\345\205\245", nullptr));
         RestartButton->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\351\207\215\345\220\257", nullptr));
         label->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\267\246\347\234\274IP", nullptr));
         RightEyeImage->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "                          \346\262\241\346\234\211\345\233\276\345\203\217\350\276\223\345\205\245", nullptr));
         label_3->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\346\250\241\345\274\217\351\200\211\346\213\251", nullptr));
         FlashButton->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\210\267\345\206\231\345\233\272\344\273\266", nullptr));
         SendButton->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\217\221\351\200\201", nullptr));
+        label_4->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\267\246\347\234\274\350\241\245\345\205\211", nullptr));
+        label_5->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\217\263\347\234\274\350\241\245\345\205\211", nullptr));
+        label_6->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\346\226\275\345\267\245\344\270\255\357\274\214\346\225\254\350\257\267\346\234\237\345\276\205", nullptr));
         MainPageButton->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\344\270\273\351\241\265\351\235\242", nullptr));
         SettingButton->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\350\256\276\347\275\256", nullptr));
         RightEyeWifiStatus->setText(QCoreApplication::translate("PaperEyeTrackerWindow", "\345\217\263\347\234\274WIFI\346\234\252\350\277\236\346\216\245", nullptr));

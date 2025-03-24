@@ -19,6 +19,7 @@ PaperEyeTrackerWindow::PaperEyeTrackerWindow(QWidget *parent) :
     append_log_window(ui.LogText);
 
     connect_callbacks();
+    bound_pages();
     // 添加输入框焦点事件处理
     ui.SSIDInput->installEventFilter(this);
     ui.PassWordInput->installEventFilter(this);
@@ -416,12 +417,69 @@ void PaperEyeTrackerWindow::onFlashButtonClicked()
 
 void PaperEyeTrackerWindow::connect_callbacks()
 {
+    left_brightness_timer = std::make_shared<QTimer>();
+    left_brightness_timer->setSingleShot(true);
+    connect(left_brightness_timer.get(), &QTimer::timeout, this, &PaperEyeTrackerWindow::onLeftSendBrightnessValue);
+    right_brightness_timer = std::make_shared<QTimer>();
+    right_brightness_timer->setSingleShot(true);
+    connect(right_brightness_timer.get(), &QTimer::timeout, this, &PaperEyeTrackerWindow::onRightSendBrightnessValue);
+
     connect(ui.SendButton, &QPushButton::clicked, this, &PaperEyeTrackerWindow::onSendButtonClicked);
     connect(ui.RestartButton, &QPushButton::clicked, this, &PaperEyeTrackerWindow::onRestartButtonClicked);
     connect(ui.FlashButton, &QPushButton::clicked, this, &PaperEyeTrackerWindow::onFlashButtonClicked);
     connect(ui.EnergyModelBox, &QComboBox::currentIndexChanged, this, &PaperEyeTrackerWindow::onEnergyModeChanged);
+
+    connect(ui.LeftBrightnessBar, &QScrollBar::valueChanged, this, &PaperEyeTrackerWindow::onLeftBrightnessChanged);
+    connect(ui.RightBrightnessBar, &QScrollBar::valueChanged, this, &PaperEyeTrackerWindow::onRightBrightnessChanged);
 }
 
+void PaperEyeTrackerWindow::onLeftBrightnessChanged(int value)
+{
+    left_brightness = value;
+    left_brightness_timer->start();
+}
+
+void PaperEyeTrackerWindow::onRightBrightnessChanged(int value)
+{
+    right_brightness = value;
+    right_brightness_timer->start();
+}
+
+void PaperEyeTrackerWindow::onLeftSendBrightnessValue() const
+{
+    if (current_esp32_version != LEFT_TAG)
+    {
+        return;
+    }
+    // 发送亮度控制命令 - 确保亮度值为三位数字
+    std::string brightness_str = std::to_string(left_brightness);
+    // 补齐三位数字，前面加0
+    while (brightness_str.length() < 3) {
+        brightness_str = std::string("0") + brightness_str;
+    }
+    std::string packet = "A6" + brightness_str + "B6";
+    serial_port_->write_data(packet);
+    // 记录操作
+    LOG_INFO("已设置亮度: {}", left_brightness);
+}
+
+void PaperEyeTrackerWindow::onRightSendBrightnessValue() const
+{
+    if (current_esp32_version != RIGHT_TAG)
+    {
+        return;
+    }
+    // 发送亮度控制命令 - 确保亮度值为三位数字
+    std::string brightness_str = std::to_string(right_brightness);
+    // 补齐三位数字，前面加0
+    while (brightness_str.length() < 3) {
+        brightness_str = std::string("0") + brightness_str;
+    }
+    std::string packet = "A6" + brightness_str + "B6";
+    serial_port_->write_data(packet);
+    // 记录操作
+    LOG_INFO("已设置亮度: {}", right_brightness);
+}
 
 std::string PaperEyeTrackerWindow::getSSID() const
 {
@@ -447,6 +505,8 @@ void PaperEyeTrackerWindow::set_config() const
 {
     ui.RightEyeIPAddress->setPlainText(QString::fromStdString(config.right_ip));
     ui.LeftEyeIPAddress->setPlainText(QString::fromStdString(config.left_ip));
+    ui.LeftBrightnessBar->setValue(config.left_brightness);
+    ui.RightBrightnessBar->setValue(config.right_brightness);
 }
 
 void PaperEyeTrackerWindow::setIPText(int version, const QString& text) const
@@ -577,6 +637,8 @@ PaperEyeTrackerConfig PaperEyeTrackerWindow::generate_config() const
     PaperEyeTrackerConfig res_config;
     res_config.left_ip = ui.LeftEyeIPAddress->toPlainText().toStdString();
     res_config.right_ip = ui.RightEyeIPAddress->toPlainText().toStdString();
+    res_config.left_brightness = left_brightness;
+    res_config.right_brightness = right_brightness;
     return res_config;
 }
 
@@ -592,4 +654,15 @@ void PaperEyeTrackerWindow::onEnergyModeChanged(int index)
     {
         max_fps = 70;
     }
+}
+
+void PaperEyeTrackerWindow::bound_pages()
+{
+    // 页面导航逻辑
+    connect(ui.MainPageButton, &QPushButton::clicked, [this] {
+        ui.stackedWidget->setCurrentIndex(0);
+    });
+    connect(ui.SettingButton, &QPushButton::clicked, [this] {
+        ui.stackedWidget->setCurrentIndex(1);
+    });
 }

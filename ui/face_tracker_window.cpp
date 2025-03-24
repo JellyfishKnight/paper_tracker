@@ -170,6 +170,7 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
                     msgBox.exec();
                     version_warning = true;
                 }
+                serial_port_manager->stop();
                 return ;
             }
             // 使用Qt的线程安全方式更新UI

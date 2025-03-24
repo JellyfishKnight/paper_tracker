@@ -21,7 +21,9 @@ struct PaperEyeTrackerConfig
 {
     std::string left_ip;
     std::string right_ip;
-    REFLECT(left_ip, right_ip);
+    int left_brightness;
+    int right_brightness;
+    REFLECT(left_ip, right_ip, left_brightness, right_brightness);
 };
 
 class PaperEyeTrackerWindow : public QWidget {
@@ -53,11 +55,18 @@ private slots:
     void onFlashButtonClicked();
 
     void onEnergyModeChanged(int index);
+    void onLeftSendBrightnessValue() const;
+    void onRightSendBrightnessValue() const;
+
+    void onLeftBrightnessChanged(int value);
+    void onRightBrightnessChanged(int value);
 
 private:
     void connect_callbacks();
 
     void create_sub_thread();
+
+    void bound_pages();
 
     Ui::PaperEyeTrackerWindow ui{};
 
@@ -79,8 +88,15 @@ private:
     std::string current_left_ip;
     std::string current_right_ip;
 
+    int left_brightness;
+    int right_brightness;
+
+
     std::shared_ptr<ConfigWriter> config_writer;
     PaperEyeTrackerConfig config;
+
+    std::shared_ptr<QTimer> left_brightness_timer;
+    std::shared_ptr<QTimer> right_brightness_timer;
 };
 
 
