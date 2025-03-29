@@ -8,9 +8,28 @@
 #include <filesystem>
 #include <fstream>
 #include <optional>
-#include <reflect.hpp>
+#include "json.hpp"
 #include <utility>
 #include "logger.hpp"
+
+using json = nlohmann::json;
+
+// 检查类型是否可以被序列化为JSON
+template<typename T>
+concept JSONSerializable = requires(json& j, const T& t) {
+  { to_json(j, t) } -> std::same_as<void>;
+};
+
+// 检查类型是否可以从JSON反序列化
+template<typename T>
+concept JSONDeserializable = requires(const json& j, T& t) {
+  { from_json(j, t) } -> std::same_as<void>;
+};
+
+// 检查类型是否同时支持序列化和反序列化
+template<typename T>
+concept JSONReflectable = JSONSerializable<T> && JSONDeserializable<T>;
+
 
 class ConfigWriter {
 public:
@@ -27,6 +46,7 @@ public:
   }
 
   template<typename T>
+    requires JSONReflectable<T>
   bool write_config(T t)
   {
     std::ofstream out_file(file_path_);
@@ -34,7 +54,7 @@ public:
     {
       return false;
     }
-    auto json_format_t = reflect::json_encode(t);
+    json json_format_t = t;
     out_file << json_format_t;
     if (out_file.fail())
     {
@@ -44,6 +64,7 @@ public:
   }
 
   template<typename T>
+    requires JSONReflectable<T>
   T get_config()
   {
     std::ifstream in_file(file_path_);
@@ -51,14 +72,14 @@ public:
     {
       return T{};
     }
-    std::string json_str;
+    json json_obj;
     in_file.seekg(std::ios_base::beg);
-    std::getline(in_file, json_str);
-    if (json_str.empty())
+    in_file >> json_obj;
+    if (json_obj.empty())
     {
       return T{};
     }
-    return reflect::json_decode<T>(json_str);
+    return json_obj.get<T>();
   }
 
 private:

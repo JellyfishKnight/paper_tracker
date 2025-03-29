@@ -61,11 +61,7 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
     ui.PasswordText->setTabChangesFocus(true);
     // 清除所有控件的初始焦点，确保没有文本框自动获得焦点
     setFocus();
-
     config_writer = std::make_shared<ConfigWriter>("./config.json");
-    // 读取配置文件
-    config = config_writer->get_config<PaperFaceTrackerConfig>();
-    set_config();
 
     // 添加ROI事件
     auto *roiFilter = new ROIEventFilter([this] (QRect rect, bool isEnd)
@@ -215,6 +211,8 @@ PaperFaceTrackerWindow::PaperFaceTrackerWindow(QWidget *parent)
         LOG_INFO("有线模式面捕连接成功");
         setSerialStatusLabel("有线模式面捕连接成功");
     }
+    // 读取配置文件
+    set_config();
     create_sub_threads();
 }
 
@@ -616,6 +614,7 @@ PaperFaceTrackerConfig PaperFaceTrackerWindow::generate_config() const
 
 void PaperFaceTrackerWindow::set_config()
 {
+    config = config_writer->get_config<PaperFaceTrackerConfig>();
     current_brightness = config.brightness;
     current_rotate_angle = config.rotate_angle;
     ui.BrightnessBar->setValue(config.brightness);

@@ -19,11 +19,11 @@
 #include "inference.hpp"
 #include "serial.hpp"
 #include "logger.hpp"
-#include "reflect.hpp"
 #include "updater.hpp"
 
 struct Rect
 {
+public:
     Rect() = default;
 
     Rect(int x, int y, int width, int height) :
@@ -40,7 +40,7 @@ struct Rect
         return *this;
     }
 
-    explicit Rect(cv::Rect rect) : rect(rect), x(rect.x), y(rect.y), width(rect.width), height(rect.height) {}
+    Rect(cv::Rect rect) : rect(rect), x(rect.x), y(rect.y), width(rect.width), height(rect.height) {}
 
     cv::Rect rect;
     bool is_roi_end = true;
@@ -50,7 +50,7 @@ struct Rect
     int width{0};
     int height{0};
 
-    REFLECT(x, y, width, height);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Rect, x, y, width, height);
 };
 
 struct PaperFaceTrackerConfig
@@ -63,7 +63,7 @@ struct PaperFaceTrackerConfig
     std::unordered_map<std::string, int> amp_map;
     Rect rect;
 
-    REFLECT(brightness, rotate_angle, energy_mode, wifi_ip, use_filter, amp_map, rect);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(PaperFaceTrackerConfig, brightness, rotate_angle, energy_mode, wifi_ip, use_filter, amp_map, rect);
 };
 
 class PaperFaceTrackerWindow final : public QWidget {
