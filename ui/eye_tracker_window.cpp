@@ -507,6 +507,7 @@ void PaperEyeTrackerWindow::set_config() const
     ui.LeftEyeIPAddress->setPlainText(QString::fromStdString(config.left_ip));
     ui.LeftBrightnessBar->setValue(config.left_brightness);
     ui.RightBrightnessBar->setValue(config.right_brightness);
+    ui.EnergyModelBox->setCurrentIndex(config.energy_mode);
 }
 
 void PaperEyeTrackerWindow::setIPText(int version, const QString& text) const
@@ -639,6 +640,7 @@ PaperEyeTrackerConfig PaperEyeTrackerWindow::generate_config() const
     res_config.right_ip = ui.RightEyeIPAddress->toPlainText().toStdString();
     res_config.left_brightness = left_brightness;
     res_config.right_brightness = right_brightness;
+    res_config.energy_mode = ui.EnergyModelBox->currentIndex();
     return res_config;
 }
 

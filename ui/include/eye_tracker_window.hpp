@@ -23,7 +23,8 @@ struct PaperEyeTrackerConfig
     std::string right_ip;
     int left_brightness;
     int right_brightness;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(PaperEyeTrackerConfig, left_ip, right_ip, left_brightness, right_brightness);
+    int energy_mode;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(PaperEyeTrackerConfig, left_ip, right_ip, left_brightness, right_brightness, energy_mode);
 };
 
 class PaperEyeTrackerWindow : public QWidget {

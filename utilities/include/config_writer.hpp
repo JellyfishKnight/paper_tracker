@@ -73,13 +73,20 @@ public:
       return T{};
     }
     json json_obj;
-    in_file.seekg(std::ios_base::beg);
-    in_file >> json_obj;
-    if (json_obj.empty())
+    try
     {
+      in_file.seekg(std::ios_base::beg);
+      in_file >> json_obj;
+      if (json_obj.empty())
+      {
+        return T{};
+      }
+      return json_obj.get<T>();
+    } catch (const std::exception& e)
+    {
+      LOG_ERROR("错误： 读取配置文件失败: {}", e.what());
       return T{};
     }
-    return json_obj.get<T>();
   }
 
 private:
