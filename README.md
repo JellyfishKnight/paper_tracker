@@ -1,3 +1,5 @@
+## This repo has been archieved, new repo: https://github.com/DJI-B/papertracker_Qt
+
 # PaperTracker
 
 <div align="center">
